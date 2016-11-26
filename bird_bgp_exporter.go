@@ -89,7 +89,7 @@ func parseLine(line string, ipVersion int) (*session, bool) {
 	match := regex.FindStringSubmatch(line)
 
 	if match != nil {
-		session := session{name: match[1], ipVersion: ipVersion, established: parseState(match[4])}
+		session := session{name: match[1], ipVersion: ipVersion, established: parseState(match[5])}
 		return &session, true
 	} else {
 		return nil, false
