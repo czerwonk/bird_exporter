@@ -7,9 +7,8 @@ this is an early version
 # Future plans
 * Port/IP binding should be customizable
 * Atomatic detection of birdcl if birdc is not available (CentOS EPEL)
-* Prefix count per session (received, advertised)
 * systemd unit
-* Support for go install 
+* Support for go install
 
 # Prometheus
 see https://prometheus.io/
