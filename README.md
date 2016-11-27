@@ -5,8 +5,6 @@ BGP session state exporter for bird routing daemon to use with Prometheus
 this is an early version
 
 # Future plans
-* Port/IP binding should be customizable
-* Atomatic detection of birdcl if birdc is not available (CentOS EPEL)
 * systemd unit
 * Support for go install
 
