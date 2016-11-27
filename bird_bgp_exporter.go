@@ -3,10 +3,12 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -20,16 +22,41 @@ type session struct {
 	exported    int64
 }
 
-var protoRegex *regexp.Regexp
-var routeRegex *regexp.Regexp
+const version string = "0.1"
+
+var (
+	protoRegex    *regexp.Regexp
+	routeRegex    *regexp.Regexp
+	showVersion   = flag.Bool("version", false, "Print version information.")
+	listenAddress = flag.String("web.listen-address", ":9200", "Address on which to expose metrics and web interface.")
+	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
+	birdClient    = flag.String("bird.client", "birdc", "Binary to communicate with the bird routing daemon")
+)
 
 func main() {
 	initRegexes()
+	flag.Parse()
 
-	fmt.Println("Starting bgp exporter")
-	http.HandleFunc("/metrics", handleMetricsRequest)
+	if *showVersion {
+		printVersion()
+		os.Exit(0)
+	}
 
-	log.Fatal(http.ListenAndServe(":9200", nil))
+	startServer()
+}
+
+func printVersion() {
+	fmt.Println("bird_bgp_exporter")
+	fmt.Printf("Version: %s\n", version)
+	fmt.Println("BGP exporter for bird routing daemon")
+}
+
+func startServer() {
+	fmt.Printf("Starting bird BGP exporter (Version: %s)\n", version)
+	http.HandleFunc(*metricsPath, handleMetricsRequest)
+
+	fmt.Printf("Listening for %s on %s\n", *metricsPath, *listenAddress)
+	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
 
 func initRegexes() {
@@ -59,7 +86,7 @@ func getSessions() []*session {
 }
 
 func getSessionsFromBird(ipVersion int) []*session {
-	client := "birdc"
+	client := *birdClient
 
 	if ipVersion == 6 {
 		client += "6"
@@ -74,7 +101,7 @@ func getBirdOutput(birdClient string) []byte {
 
 	if err != nil {
 		b = make([]byte, 0)
-		log.Print(err)
+		log.Println(err)
 	}
 
 	return b
