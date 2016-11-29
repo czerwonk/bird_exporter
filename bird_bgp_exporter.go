@@ -136,12 +136,12 @@ func parseOutput(data []byte, ipVersion int) []*session {
 func parseLineForSession(line string, ipVersion int) (*session, bool) {
 	match := protoRegex.FindStringSubmatch(line)
 
-	if match != nil {
-		session := session{name: match[1], ipVersion: ipVersion, established: parseState(match[5])}
-		return &session, true
+	if match == nil {
+		return nil, false
 	}
 
-	return nil, false
+	session := session{name: match[1], ipVersion: ipVersion, established: parseState(match[5])}
+	return &session, true
 }
 
 func parseLineForRoutes(line string, session *session) {
