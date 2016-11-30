@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
+	"time"
 )
 
 type session struct {
@@ -20,9 +21,10 @@ type session struct {
 	established int
 	imported    int64
 	exported    int64
+	uptime      int
 }
 
-const version string = "0.1"
+const version string = "0.1.1"
 
 var (
 	protoRegex    *regexp.Regexp
@@ -76,6 +78,7 @@ func writeLineForSession(s *session, w io.Writer) {
 	fmt.Fprintf(w, "bgp%d_session_up{name=\"%s\"} %d\n", s.ipVersion, s.name, s.established)
 	fmt.Fprintf(w, "bgp%d_session_prefix_count_import{name=\"%s\"} %d\n", s.ipVersion, s.name, s.imported)
 	fmt.Fprintf(w, "bgp%d_session_prefix_count_export{name=\"%s\"} %d\n", s.ipVersion, s.name, s.exported)
+	fmt.Fprintf(w, "bgp%d_session_uptime{name=\"%s\"} %d\n", s.ipVersion, s.name, s.uptime)
 }
 
 func getSessions() []*session {
@@ -140,7 +143,7 @@ func parseLineForSession(line string, ipVersion int) (*session, bool) {
 		return nil, false
 	}
 
-	session := session{name: match[1], ipVersion: ipVersion, established: parseState(match[5])}
+	session := session{name: match[1], ipVersion: ipVersion, established: parseState(match[5]), uptime: parseUptime(match[4])}
 	return &session, true
 }
 
@@ -148,8 +151,8 @@ func parseLineForRoutes(line string, session *session) {
 	match := routeRegex.FindStringSubmatch(line)
 
 	if match != nil {
-		session.imported, _ = strconv.ParseInt(match[1], 0, 64)
-		session.exported, _ = strconv.ParseInt(match[2], 0, 64)
+		session.imported, _ = strconv.ParseInt(match[1], 10, 64)
+		session.exported, _ = strconv.ParseInt(match[2], 10, 64)
 	}
 }
 
@@ -159,4 +162,17 @@ func parseState(state string) int {
 	} else {
 		return 0
 	}
+}
+
+func parseUptime(timestamp string) int {
+	since, err := strconv.ParseInt(timestamp, 10, 64)
+
+	if err != nil {
+		log.Println(err)
+		return 0
+	}
+
+	s := time.Unix(since, 0)
+	d := time.Now().Sub(s)
+	return int(d.Seconds())
 }
