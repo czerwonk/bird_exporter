@@ -41,11 +41,12 @@ type session struct {
 	uptime      int
 }
 
-const version string = "0.1.1"
+const version string = "0.2"
 
 var (
 	protoRegex    *regexp.Regexp
 	routeRegex    *regexp.Regexp
+  uptimeRegex   *regexp.Regexp
 	showVersion   = flag.Bool("version", false, "Print version information.")
 	listenAddress = flag.String("web.listen-address", ":9200", "Address on which to expose metrics and web interface.")
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
@@ -79,8 +80,9 @@ func startServer() {
 }
 
 func initRegexes() {
-	protoRegex, _ = regexp.Compile("^([^\\s]+)\\s+BGP\\s+([^\\s]+)\\s+([^\\s]+)\\s+([\\d]+)\\s+(.*?)\\s*$")
+	protoRegex, _ = regexp.Compile("^([^\\s]+)\\s+BGP\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+(.*?)\\s*$")
 	routeRegex, _ = regexp.Compile("^\\s+Routes:\\s+(\\d+) imported, \\d+ filtered, (\\d+) exported")
+  uptimeRegex, _ = regexp.Compile("^(?:((\\d+):(\\d{2}):(\\d{2}))|\\d+)$")
 }
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
@@ -181,15 +183,51 @@ func parseState(state string) int {
 	}
 }
 
-func parseUptime(timestamp string) int {
-	since, err := strconv.ParseInt(timestamp, 10, 64)
+func parseUptime(value string) int {
+  match := uptimeRegex.FindStringSubmatch(value)
+
+  if match == nil {
+    return 0
+  }
+
+  if match[1] != "" {
+    return parseUptimeForDuration(match) 
+  }
+
+  return parseUptimeForTimestamp(value)
+}
+
+func parseUptimeForDuration(duration []string) int {
+  h := parseInt(duration[2])
+  m := parseInt(duration[3])
+  s := parseInt(duration[4])
+  str := fmt.Sprintf("%dh%dm%ds", h, m, s)
+
+  d, err := time.ParseDuration(str)
+
+  if err != nil {
+    log.Println(err)
+    return 0
+  }
+
+  return int(d.Seconds())
+}
+
+func parseUptimeForTimestamp(timestamp string) int {
+	since := parseInt(timestamp)
+
+	s := time.Unix(since, 0)
+	d := time.Since(s)
+	return int(d.Seconds())
+}
+
+func parseInt(value string) int64 {
+  i, err := strconv.ParseInt(value, 10, 64)
 
 	if err != nil {
 		log.Println(err)
 		return 0
 	}
 
-	s := time.Unix(since, 0)
-	d := time.Now().Sub(s)
-	return int(d.Seconds())
+  return i
 }
