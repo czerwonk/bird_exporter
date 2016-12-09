@@ -1,5 +1,5 @@
 # bird_bgp_exporter
-BGP session state exporter for bird routing daemon to use with Prometheus
+BGP metric exporter for bird routing daemon to use with Prometheus
 
 # Remarks
 this is an early version
@@ -8,6 +8,10 @@ this is an early version
 ```
 go get github.com/czerwonk/bird_bgp_exporter
 ```
+
+# Features
+* BGP session state
+* imported / exported prefix counts
 
 # Future plans
 * systemd unit
