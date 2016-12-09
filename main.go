@@ -24,7 +24,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 )
 
 type session struct {
@@ -84,33 +83,4 @@ func writeLineForSession(s *session, w io.Writer) {
 	fmt.Fprintf(w, "bgp%d_session_prefix_count_import{name=\"%s\"} %d\n", s.ipVersion, s.name, s.imported)
 	fmt.Fprintf(w, "bgp%d_session_prefix_count_export{name=\"%s\"} %d\n", s.ipVersion, s.name, s.exported)
 	fmt.Fprintf(w, "bgp%d_session_uptime{name=\"%s\"} %d\n", s.ipVersion, s.name, s.uptime)
-}
-
-func getSessions() []*session {
-	birdSessions := getSessionsFromBird(4)
-	bird6Sessions := getSessionsFromBird(6)
-
-	return append(birdSessions, bird6Sessions...)
-}
-
-func getSessionsFromBird(ipVersion int) []*session {
-	client := *birdClient
-
-	if ipVersion == 6 {
-		client += "6"
-	}
-
-	output := getBirdOutput(client)
-	return parseOutput(output, ipVersion)
-}
-
-func getBirdOutput(birdClient string) []byte {
-	b, err := exec.Command(birdClient, "show", "protocols", "all").Output()
-
-	if err != nil {
-		b = make([]byte, 0)
-		log.Println(err)
-	}
-
-	return b
 }
