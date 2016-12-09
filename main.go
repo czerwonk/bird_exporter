@@ -18,8 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -27,9 +25,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"regexp"
-	"strconv"
-	"time"
 )
 
 type session struct {
@@ -41,12 +36,9 @@ type session struct {
 	uptime      int
 }
 
-const version string = "0.2"
+const version string = "0.2.1"
 
 var (
-	protoRegex    *regexp.Regexp
-	routeRegex    *regexp.Regexp
-	uptimeRegex   *regexp.Regexp
 	showVersion   = flag.Bool("version", false, "Print version information.")
 	listenAddress = flag.String("web.listen-address", ":9200", "Address on which to expose metrics and web interface.")
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
@@ -68,7 +60,7 @@ func main() {
 func printVersion() {
 	fmt.Println("bird_bgp_exporter")
 	fmt.Printf("Version: %s\n", version)
-	fmt.Println("BGP exporter for bird routing daemon")
+	fmt.Println("BGP metric exporter for bird routing daemon")
 }
 
 func startServer() {
@@ -77,12 +69,6 @@ func startServer() {
 
 	fmt.Printf("Listening for %s on %s\n", *metricsPath, *listenAddress)
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
-}
-
-func initRegexes() {
-	protoRegex, _ = regexp.Compile("^([^\\s]+)\\s+BGP\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+(.*?)\\s*$")
-	routeRegex, _ = regexp.Compile("^\\s+Routes:\\s+(\\d+) imported, \\d+ filtered, (\\d+) exported")
-	uptimeRegex, _ = regexp.Compile("^(?:((\\d+):(\\d{2}):(\\d{2}))|\\d+)$")
 }
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
@@ -127,107 +113,4 @@ func getBirdOutput(birdClient string) []byte {
 	}
 
 	return b
-}
-
-func parseOutput(data []byte, ipVersion int) []*session {
-	sessions := make([]*session, 0)
-
-	reader := bytes.NewReader(data)
-	scanner := bufio.NewScanner(reader)
-	var current *session = nil
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		if session, res := parseLineForSession(line, ipVersion); res == true {
-			current = session
-			sessions = append(sessions, current)
-		}
-
-		if current != nil {
-			parseLineForRoutes(line, current)
-		}
-
-		if line == "" {
-			current = nil
-		}
-	}
-
-	return sessions
-}
-
-func parseLineForSession(line string, ipVersion int) (*session, bool) {
-	match := protoRegex.FindStringSubmatch(line)
-
-	if match == nil {
-		return nil, false
-	}
-
-	session := session{name: match[1], ipVersion: ipVersion, established: parseState(match[5]), uptime: parseUptime(match[4])}
-	return &session, true
-}
-
-func parseLineForRoutes(line string, session *session) {
-	match := routeRegex.FindStringSubmatch(line)
-
-	if match != nil {
-		session.imported, _ = strconv.ParseInt(match[1], 10, 64)
-		session.exported, _ = strconv.ParseInt(match[2], 10, 64)
-	}
-}
-
-func parseState(state string) int {
-	if state == "Established" {
-		return 1
-	} else {
-		return 0
-	}
-}
-
-func parseUptime(value string) int {
-	match := uptimeRegex.FindStringSubmatch(value)
-
-	if match == nil {
-		return 0
-	}
-
-	if match[1] != "" {
-		return parseUptimeForDuration(match)
-	}
-
-	return parseUptimeForTimestamp(value)
-}
-
-func parseUptimeForDuration(duration []string) int {
-	h := parseInt(duration[2])
-	m := parseInt(duration[3])
-	s := parseInt(duration[4])
-	str := fmt.Sprintf("%dh%dm%ds", h, m, s)
-
-	d, err := time.ParseDuration(str)
-
-	if err != nil {
-		log.Println(err)
-		return 0
-	}
-
-	return int(d.Seconds())
-}
-
-func parseUptimeForTimestamp(timestamp string) int {
-	since := parseInt(timestamp)
-
-	s := time.Unix(since, 0)
-	d := time.Since(s)
-	return int(d.Seconds())
-}
-
-func parseInt(value string) int64 {
-	i, err := strconv.ParseInt(value, 10, 64)
-
-	if err != nil {
-		log.Println(err)
-		return 0
-	}
-
-	return i
 }
