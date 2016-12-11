@@ -48,7 +48,7 @@ func parseOutput(data []byte, ipVersion int) []*session {
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		if session, res := parseLineForSession(line, ipVersion); res == true {
+		if session, ok := parseLineForSession(line, ipVersion); ok {
 			current = session
 			sessions = append(sessions, current)
 		}
