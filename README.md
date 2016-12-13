@@ -1,4 +1,4 @@
-# bird_bgp_exporter
+# bird_bgp_exporter [![Build Status](https://travis-ci.org/czerwonk/bird_bgp_exporter.svg)][travis]
 BGP metric exporter for bird routing daemon to use with Prometheus
 
 # Remarks
@@ -21,3 +21,5 @@ see https://prometheus.io/
 
 # Bird routing daemon
 see http://bird.network.cz/
+
+[travis]: https://travis-ci.org/czerwonk/bird_bgp_exporter
