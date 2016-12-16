@@ -32,7 +32,6 @@ var (
 )
 
 func main() {
-	initRegexes()
 	flag.Parse()
 
 	if *showVersion {
