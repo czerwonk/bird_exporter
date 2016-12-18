@@ -1,0 +1,13 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "N4WKFoRf6d0PYFjgHkjuz3v2lcA=",
+			"path": "github.com/czerwonk/testutils/assert",
+			"revision": "b1a52ed26acf6fd5536b55224257cd7fb0aa04de",
+			"revisionTime": "2016-12-18T11:32:53Z"
+		}
+	],
+	"rootPath": "github.com/czerwonk/bird_bgp_exporter"
+}
