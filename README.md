@@ -1,12 +1,12 @@
-# bird_bgp_exporter [![Build Status](https://travis-ci.org/czerwonk/bird_bgp_exporter.svg)][travis]
-BGP metric exporter for bird routing daemon to use with Prometheus
+# bird_exporter [![Build Status](https://travis-ci.org/czerwonk/bird_exporter.svg)][travis]
+Metric exporter for bird routing daemon to use with Prometheus
 
 # Remarks
 this is an early version
 
 # Install
 ```
-go get github.com/czerwonk/bird_bgp_exporter
+go get github.com/czerwonk/bird_exporter
 ```
 
 # Features
@@ -15,6 +15,7 @@ go get github.com/czerwonk/bird_bgp_exporter
 
 # Future plans
 * systemd unit
+* support for OSPF protocol
 
 # Prometheus
 see https://prometheus.io/
