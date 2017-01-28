@@ -23,4 +23,4 @@ see https://prometheus.io/
 # Bird routing daemon
 see http://bird.network.cz/
 
-[travis]: https://travis-ci.org/czerwonk/bird_bgp_exporter
+[travis]: https://travis-ci.org/czerwonk/bird_exporter
