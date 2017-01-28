@@ -20,7 +20,7 @@ type session struct {
 	uptime      int
 }
 
-const version string = "0.3"
+const version string = "0.4"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -43,13 +43,13 @@ func main() {
 }
 
 func printVersion() {
-	fmt.Println("bird_bgp_exporter")
+	fmt.Println("bird_exporter")
 	fmt.Printf("Version: %s\n", version)
-	fmt.Println("BGP metric exporter for bird routing daemon")
+	fmt.Println("Metric exporter for bird routing daemon")
 }
 
 func startServer() {
-	fmt.Printf("Starting bird BGP exporter (Version: %s)\n", version)
+	fmt.Printf("Starting bird exporter (Version: %s)\n", version)
 	http.HandleFunc(*metricsPath, errorHandler(handleMetricsRequest))
 
 	fmt.Printf("Listening for %s on %s\n", *metricsPath, *listenAddress)
