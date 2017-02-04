@@ -11,7 +11,8 @@ go get github.com/czerwonk/bird_exporter
 
 # Features
 * BGP session state
-* imported / exported prefix counts
+* imported / exported prefix counts (BGP, OSPF)
+* protocol uptimes (BGP, OSPF)
 
 # Future plans
 * systemd unit
