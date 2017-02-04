@@ -11,14 +11,14 @@ import (
 )
 
 var (
-	protoRegex  *regexp.Regexp
-	routeRegex  *regexp.Regexp
-	uptimeRegex *regexp.Regexp
+	protocolRegex *regexp.Regexp
+	routeRegex    *regexp.Regexp
+	uptimeRegex   *regexp.Regexp
 )
 
 func init() {
-	protoRegex, _ = regexp.Compile("^([^\\s]+)\\s+BGP\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+(.*?)\\s*$")
-	routeRegex, _ = regexp.Compile("^\\s+Routes:\\s+(\\d+) imported, \\d+ filtered, (\\d+) exported")
+	protocolRegex, _ = regexp.Compile("^([^\\s]+)\\s+(BGP|OSPF)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+(.*?)\\s*$")
+	routeRegex, _ = regexp.Compile("^\\s+Routes:\\s+(\\d+) imported, (?:\\d+ filtered, )?(\\d+) exported")
 	uptimeRegex, _ = regexp.Compile("^(?:((\\d+):(\\d{2}):(\\d{2}))|\\d+)$")
 }
 
@@ -49,14 +49,29 @@ func parseOutput(data []byte, ipVersion int) []*protocol {
 }
 
 func parseLineForProtocol(line string, ipVersion int) (*protocol, bool) {
-	match := protoRegex.FindStringSubmatch(line)
+	match := protocolRegex.FindStringSubmatch(line)
 
 	if match == nil {
 		return nil, false
 	}
 
-	p := protocol{name: match[1], ipVersion: ipVersion, established: parseState(match[5]), uptime: parseUptime(match[4])}
-	return &p, true
+	proto := parseProto(match[2])
+	up := parseState(match[6], proto)
+	ut := parseUptime(match[5])
+	p := &protocol{proto: proto, name: match[1], ipVersion: ipVersion, up: up, uptime: ut, attributes: make(map[string]interface{})}
+
+	return p, true
+}
+
+func parseProto(val string) int {
+	switch val {
+	case "BGP":
+		return BGP
+	case "OSPF":
+		return OSPF
+	}
+
+	return PROTO_UNKNOWN
 }
 
 func parseLineForRoutes(line string, p *protocol) {
@@ -68,8 +83,8 @@ func parseLineForRoutes(line string, p *protocol) {
 	}
 }
 
-func parseState(state string) int {
-	if state == "Established" {
+func parseState(state string, proto int) int {
+	if proto == OSPF || state == "Established" {
 		return 1
 	} else {
 		return 0

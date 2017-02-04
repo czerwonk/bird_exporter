@@ -73,16 +73,38 @@ func handleMetricsRequest(w io.Writer, r *http.Request) error {
 		return err
 	}
 
-	for _, s := range protocols {
-		writeForBgpSession(s, w)
+	for _, p := range protocols {
+		switch p.proto {
+		case BGP:
+			writeForBgpSession(p, w)
+		case OSPF:
+			writeForOspf(p, w)
+		}
 	}
 
 	return nil
 }
 
-func writeForBgpSession(s *protocol, w io.Writer) {
-	fmt.Fprintf(w, "bgp%d_session_up{name=\"%s\"} %d\n", s.ipVersion, s.name, s.established)
-	fmt.Fprintf(w, "bgp%d_session_prefix_count_import{name=\"%s\"} %d\n", s.ipVersion, s.name, s.imported)
-	fmt.Fprintf(w, "bgp%d_session_prefix_count_export{name=\"%s\"} %d\n", s.ipVersion, s.name, s.exported)
-	fmt.Fprintf(w, "bgp%d_session_uptime{name=\"%s\"} %d\n", s.ipVersion, s.name, s.uptime)
+func writeForBgpSession(p *protocol, w io.Writer) {
+	prefix := fmt.Sprintf("bgp%d_session", p.ipVersion)
+	writeForProtocol(p, prefix, w)
+}
+
+func writeForOspf(p *protocol, w io.Writer) {
+	if p.ipVersion == 4 {
+		writeForProtocol(p, "ospf", w)
+	} else {
+		writeForProtocol(p, "ospfv3", w)
+	}
+}
+
+func writeForProtocol(p *protocol, prefix string, w io.Writer) {
+	fmt.Fprintf(w, "%s_up{name=\"%s\"} %d\n", prefix, p.name, p.up)
+	fmt.Fprintf(w, "%s_count_import{name=\"%s\"} %d\n", prefix, p.name, p.imported)
+	fmt.Fprintf(w, "%s_prefix_count_export{name=\"%s\"} %d\n", prefix, p.name, p.exported)
+	fmt.Fprintf(w, "%s_uptime{name=\"%s\"} %d\n", prefix, p.name, p.uptime)
+
+	for k, v := range p.attributes {
+		fmt.Fprintf(w, "%s_%s{name=\"%s\"} %v\n", prefix, k, v)
+	}
 }
