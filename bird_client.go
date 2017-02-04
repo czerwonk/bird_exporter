@@ -2,29 +2,29 @@ package main
 
 import "os/exec"
 
-func getSessions() ([]*session, error) {
-	sessions := make([]*session, 0)
+func getProtocols() ([]*protocol, error) {
+	protocols := make([]*protocol, 0)
 
 	if *birdEnabled {
-		s, err := getSessionsFromBird(4)
+		s, err := getProtocolsFromBird(4)
 		if err != nil {
 			return nil, err
 		}
-		sessions = append(sessions, s...)
+		protocols = append(protocols, s...)
 	}
 
 	if *bird6Enabled {
-		s, err := getSessionsFromBird(6)
+		s, err := getProtocolsFromBird(6)
 		if err != nil {
 			return nil, err
 		}
-		sessions = append(sessions, s...)
+		protocols = append(protocols, s...)
 	}
 
-	return sessions, nil
+	return protocols, nil
 }
 
-func getSessionsFromBird(ipVersion int) ([]*session, error) {
+func getProtocolsFromBird(ipVersion int) ([]*protocol, error) {
 	client := *birdClient
 
 	if ipVersion == 6 {

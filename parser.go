@@ -22,18 +22,18 @@ func init() {
 	uptimeRegex, _ = regexp.Compile("^(?:((\\d+):(\\d{2}):(\\d{2}))|\\d+)$")
 }
 
-func parseOutput(data []byte, ipVersion int) []*session {
-	sessions := make([]*session, 0)
+func parseOutput(data []byte, ipVersion int) []*protocol {
+	protocols := make([]*protocol, 0)
 
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
-	var current *session = nil
+	var current *protocol = nil
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		if session, ok := parseLineForSession(line, ipVersion); ok {
-			current = session
-			sessions = append(sessions, current)
+		if p, ok := parseLineForProtocol(line, ipVersion); ok {
+			current = p
+			protocols = append(protocols, current)
 		}
 
 		if current != nil {
@@ -45,26 +45,26 @@ func parseOutput(data []byte, ipVersion int) []*session {
 		}
 	}
 
-	return sessions
+	return protocols
 }
 
-func parseLineForSession(line string, ipVersion int) (*session, bool) {
+func parseLineForProtocol(line string, ipVersion int) (*protocol, bool) {
 	match := protoRegex.FindStringSubmatch(line)
 
 	if match == nil {
 		return nil, false
 	}
 
-	session := session{name: match[1], ipVersion: ipVersion, established: parseState(match[5]), uptime: parseUptime(match[4])}
-	return &session, true
+	p := protocol{name: match[1], ipVersion: ipVersion, established: parseState(match[5]), uptime: parseUptime(match[4])}
+	return &p, true
 }
 
-func parseLineForRoutes(line string, session *session) {
+func parseLineForRoutes(line string, p *protocol) {
 	match := routeRegex.FindStringSubmatch(line)
 
 	if match != nil {
-		session.imported, _ = strconv.ParseInt(match[1], 10, 64)
-		session.exported, _ = strconv.ParseInt(match[2], 10, 64)
+		p.imported, _ = strconv.ParseInt(match[1], 10, 64)
+		p.exported, _ = strconv.ParseInt(match[2], 10, 64)
 	}
 }
 

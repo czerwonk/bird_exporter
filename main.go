@@ -11,24 +11,15 @@ import (
 	"os"
 )
 
-type session struct {
-	name        string
-	ipVersion   int
-	established int
-	imported    int64
-	exported    int64
-	uptime      int
-}
-
-const version string = "0.4"
+const version string = "0.5"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
 	listenAddress = flag.String("web.listen-address", ":9200", "Address on which to expose metrics and web interface.")
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	birdClient    = flag.String("bird.client", "birdc", "Binary to communicate with the bird routing daemon")
-	birdEnabled   = flag.Bool("bird.ipv4", true, "Get sessions from bird")
-	bird6Enabled  = flag.Bool("bird.ipv6", true, "Get sessions from bird6")
+	birdEnabled   = flag.Bool("bird.ipv4", true, "Get protocols from bird")
+	bird6Enabled  = flag.Bool("bird.ipv6", true, "Get protocols from bird6")
 )
 
 func main() {
@@ -77,19 +68,19 @@ func errorHandler(f func(io.Writer, *http.Request) error) http.HandlerFunc {
 }
 
 func handleMetricsRequest(w io.Writer, r *http.Request) error {
-	sessions, err := getSessions()
+	protocols, err := getProtocols()
 	if err != nil {
 		return err
 	}
 
-	for _, s := range sessions {
-		writeForSession(s, w)
+	for _, s := range protocols {
+		writeForBgpSession(s, w)
 	}
 
 	return nil
 }
 
-func writeForSession(s *session, w io.Writer) {
+func writeForBgpSession(s *protocol, w io.Writer) {
 	fmt.Fprintf(w, "bgp%d_session_up{name=\"%s\"} %d\n", s.ipVersion, s.name, s.established)
 	fmt.Fprintf(w, "bgp%d_session_prefix_count_import{name=\"%s\"} %d\n", s.ipVersion, s.name, s.imported)
 	fmt.Fprintf(w, "bgp%d_session_prefix_count_export{name=\"%s\"} %d\n", s.ipVersion, s.name, s.exported)
