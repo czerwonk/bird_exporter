@@ -15,7 +15,6 @@ go get github.com/czerwonk/bird_exporter
 
 # Future plans
 * systemd unit
-* support for OSPF protocol
 
 # Prometheus
 see https://prometheus.io/
