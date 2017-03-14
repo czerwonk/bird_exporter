@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-const version string = "0.5"
+const version string = "0.5.1"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -21,6 +21,13 @@ var (
 	birdEnabled   = flag.Bool("bird.ipv4", true, "Get protocols from bird")
 	bird6Enabled  = flag.Bool("bird.ipv6", true, "Get protocols from bird6")
 )
+
+func init() {
+	flag.Usage = func() {
+		fmt.Println("Usage: bird_exporter [ ... ]\n\nParameters:\n")
+		flag.PrintDefaults()
+	}
+}
 
 func main() {
 	flag.Parse()
