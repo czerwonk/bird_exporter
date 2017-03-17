@@ -107,7 +107,7 @@ func writeForOspf(p *protocol, w io.Writer) {
 
 func writeForProtocol(p *protocol, prefix string, w io.Writer) {
 	fmt.Fprintf(w, "%s_up{name=\"%s\"} %d\n", prefix, p.name, p.up)
-	fmt.Fprintf(w, "%s_count_import{name=\"%s\"} %d\n", prefix, p.name, p.imported)
+	fmt.Fprintf(w, "%s_prefix_count_import{name=\"%s\"} %d\n", prefix, p.name, p.imported)
 	fmt.Fprintf(w, "%s_prefix_count_export{name=\"%s\"} %d\n", prefix, p.name, p.exported)
 	fmt.Fprintf(w, "%s_uptime{name=\"%s\"} %d\n", prefix, p.name, p.uptime)
 
