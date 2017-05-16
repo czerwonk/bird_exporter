@@ -80,7 +80,7 @@ func TestOspfOldTimeFormat(t *testing.T) {
 }
 
 func TestOspfCurrentTimeFormat(t *testing.T) {
-	data := "ospf1    OSPF      master   up     00:01:00  Established\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
+	data := "ospf1    OSPF      master   up     00:01:00  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
 	p := parseOutput([]byte(data), 4)
 	assert.IntEqual("protocols", 1, len(p), t)
 
@@ -92,4 +92,18 @@ func TestOspfCurrentTimeFormat(t *testing.T) {
 	assert.Int64Equal("exported", 34, x.exported, t)
 	assert.IntEqual("ipVersion", 4, x.ipVersion, t)
 	assert.IntEqual("uptime", 60, x.uptime, t)
+}
+
+func TestOspfProtocolDown(t *testing.T) {
+	data := "o_hrz    OSPF     t_hrz    down   1494926415  \n  Preference:     150\n  Input filter:   ACCEPT\n  Output filter:  REJECT\nxxx"
+	p := parseOutput([]byte(data), 6)
+	assert.IntEqual("protocols", 1, len(p), t)
+
+	x := p[0]
+	assert.StringEqual("name", "o_hrz", x.name, t)
+	assert.IntEqual("proto", OSPF, x.proto, t)
+	assert.IntEqual("established", 0, x.up, t)
+	assert.Int64Equal("imported", 0, x.imported, t)
+	assert.Int64Equal("exported", 0, x.exported, t)
+	assert.IntEqual("ipVersion", 6, x.ipVersion, t)
 }
