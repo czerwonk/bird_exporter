@@ -4,7 +4,7 @@ Metric exporter for bird routing daemon to use with Prometheus
 # Remarks
 this is an early version
 
-Requires bird to be installed on the same mashine.
+Since bird_exporter calls the bird client binary, bird has to be installed on the same mashine as bird_exporter.
 
 To get meaningful uptime information bird has to be configured this way:
 ```
