@@ -4,6 +4,12 @@ Metric exporter for bird routing daemon to use with Prometheus
 # Remarks
 this is an early version
 
+Requires bird to be installed on the same mashine.
+To use uptime bird has to be configured this way:
+```
+timeformat protocol "%s";
+```
+
 # Install
 ```
 go get github.com/czerwonk/bird_exporter
@@ -13,9 +19,6 @@ go get github.com/czerwonk/bird_exporter
 * BGP session state
 * imported / exported prefix counts (BGP, OSPF)
 * protocol uptimes (BGP, OSPF)
-
-# Future plans
-* systemd unit
 
 # Prometheus
 see https://prometheus.io/
