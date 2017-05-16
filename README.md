@@ -18,7 +18,7 @@ go get github.com/czerwonk/bird_exporter
 
 # Features
 * BGP session state
-* imported / exported prefix counts (BGP, OSPF)
+* imported / exported / filtered prefix counts (BGP, OSPF)
 * protocol uptimes (BGP, OSPF)
 
 # Prometheus
