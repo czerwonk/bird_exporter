@@ -13,6 +13,7 @@ type protocol struct {
 	up         int
 	imported   int64
 	exported   int64
+	filtered   int64
 	uptime     int
 	attributes map[string]interface{}
 }

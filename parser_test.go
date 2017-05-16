@@ -17,6 +17,7 @@ func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	assert.IntEqual("established", 1, x.up, t)
 	assert.Int64Equal("imported", 12, x.imported, t)
 	assert.Int64Equal("exported", 34, x.exported, t)
+	assert.Int64Equal("filtered", 1, x.filtered, t)
 	assert.IntEqual("ipVersion", 4, x.ipVersion, t)
 }
 
@@ -31,6 +32,7 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 	assert.IntEqual("established", 1, x.up, t)
 	assert.Int64Equal("imported", 12, x.imported, t)
 	assert.Int64Equal("exported", 34, x.exported, t)
+	assert.Int64Equal("filtered", 1, x.filtered, t)
 	assert.IntEqual("ipVersion", 4, x.ipVersion, t)
 	assert.IntEqual("uptime", 60, x.uptime, t)
 }
@@ -73,7 +75,7 @@ func TestOspfOldTimeFormat(t *testing.T) {
 	x := p[0]
 	assert.StringEqual("name", "ospf1", x.name, t)
 	assert.IntEqual("proto", OSPF, x.proto, t)
-	assert.IntEqual("established", 1, x.up, t)
+	assert.IntEqual("up", 1, x.up, t)
 	assert.Int64Equal("imported", 12, x.imported, t)
 	assert.Int64Equal("exported", 34, x.exported, t)
 	assert.IntEqual("ipVersion", 4, x.ipVersion, t)
@@ -87,7 +89,7 @@ func TestOspfCurrentTimeFormat(t *testing.T) {
 	x := p[0]
 	assert.StringEqual("name", "ospf1", x.name, t)
 	assert.IntEqual("proto", OSPF, x.proto, t)
-	assert.IntEqual("established", 1, x.up, t)
+	assert.IntEqual("up", 1, x.up, t)
 	assert.Int64Equal("imported", 12, x.imported, t)
 	assert.Int64Equal("exported", 34, x.exported, t)
 	assert.IntEqual("ipVersion", 4, x.ipVersion, t)
@@ -102,8 +104,26 @@ func TestOspfProtocolDown(t *testing.T) {
 	x := p[0]
 	assert.StringEqual("name", "o_hrz", x.name, t)
 	assert.IntEqual("proto", OSPF, x.proto, t)
-	assert.IntEqual("established", 0, x.up, t)
+	assert.IntEqual("up", 0, x.up, t)
 	assert.Int64Equal("imported", 0, x.imported, t)
 	assert.Int64Equal("exported", 0, x.exported, t)
 	assert.IntEqual("ipVersion", 6, x.ipVersion, t)
+}
+
+func TestOspfRunning(t *testing.T) {
+	data := "ospf1    OSPF      master   up     00:01:00  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
+	p := parseOutput([]byte(data), 4)
+	assert.IntEqual("protocols", 1, len(p), t)
+
+	x := p[0]
+	assert.IntEqual("runing", 1, p.attributes["running"], t)
+}
+
+func TestOspfAlone(t *testing.T) {
+	data := "ospf1    OSPF      master   up     00:01:00  Alone\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
+	p := parseOutput([]byte(data), 4)
+	assert.IntEqual("protocols", 1, len(p), t)
+
+	x := p[0]
+	assert.IntEqual("runing", 0, p.attributes["running"], t)
 }

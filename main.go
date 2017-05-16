@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-const version string = "0.5.3"
+const version string = "0.6.0"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -109,6 +109,7 @@ func writeForProtocol(p *protocol, prefix string, w io.Writer) {
 	fmt.Fprintf(w, "%s_up{name=\"%s\"} %d\n", prefix, p.name, p.up)
 	fmt.Fprintf(w, "%s_prefix_count_import{name=\"%s\"} %d\n", prefix, p.name, p.imported)
 	fmt.Fprintf(w, "%s_prefix_count_export{name=\"%s\"} %d\n", prefix, p.name, p.exported)
+	fmt.Fprintf(w, "%s_prefix_count_filter{name=\"%s\"} %d\n", prefix, p.name, p.filtered)
 	fmt.Fprintf(w, "%s_uptime{name=\"%s\"} %d\n", prefix, p.name, p.uptime)
 
 	for k, v := range p.attributes {
