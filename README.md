@@ -5,7 +5,8 @@ Metric exporter for bird routing daemon to use with Prometheus
 this is an early version
 
 Requires bird to be installed on the same mashine.
-To use uptime bird has to be configured this way:
+
+To get meaningful uptime information bird has to be configured this way:
 ```
 timeformat protocol "%s";
 ```
