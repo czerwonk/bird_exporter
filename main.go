@@ -113,6 +113,6 @@ func writeForProtocol(p *protocol, prefix string, w io.Writer) {
 	fmt.Fprintf(w, "%s_uptime{name=\"%s\"} %d\n", prefix, p.name, p.uptime)
 
 	for k, v := range p.attributes {
-		fmt.Fprintf(w, "%s_%s{name=\"%s\"} %v\n", prefix, k, v)
+		fmt.Fprintf(w, "%s_%s{name=\"%s\"} %v\n", prefix, k, p.name, v)
 	}
 }

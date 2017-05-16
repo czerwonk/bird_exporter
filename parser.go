@@ -59,6 +59,7 @@ func parseLineForProtocol(line string, ipVersion int) (*protocol, bool) {
 	up := parseState(match[4], proto)
 	ut := parseUptime(match[5])
 	p := &protocol{proto: proto, name: match[1], ipVersion: ipVersion, up: up, uptime: ut, attributes: make(map[string]interface{})}
+	fillAttributes(p, match)
 
 	return p, true
 }
@@ -90,9 +91,9 @@ func parseLineForRoutes(line string, p *protocol) {
 func parseState(state string, proto int) int {
 	if state == "up" {
 		return 1
-	} else {
-		return 0
 	}
+
+	return 0
 }
 
 func parseUptime(value string) int {
@@ -142,4 +143,18 @@ func parseInt(value string) int64 {
 	}
 
 	return i
+}
+
+func fillAttributes(p *protocol, m []string) {
+	if p.proto == OSPF {
+		p.attributes["running"] = parseOspfRunning(m[6])
+	}
+}
+
+func parseOspfRunning(state string) int {
+	if state == "Running" {
+		return 1
+	}
+
+	return 0
 }

@@ -116,7 +116,7 @@ func TestOspfRunning(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.IntEqual("runing", 1, p.attributes["running"], t)
+	assert.IntEqual("runing", 1, x.attributes["running"].(int), t)
 }
 
 func TestOspfAlone(t *testing.T) {
@@ -125,5 +125,5 @@ func TestOspfAlone(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.IntEqual("runing", 0, p.attributes["running"], t)
+	assert.IntEqual("runing", 0, x.attributes["running"].(int), t)
 }
