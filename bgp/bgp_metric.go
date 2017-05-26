@@ -30,11 +30,11 @@ func getDesc(prefix string) *desc {
 	labels = append(labels, "name")
 
 	d := &desc{}
-	d.upDesc = prometheus.NewDesc(prefix+"_up", "Protocol is up", labels, nil)
-	d.importCountDesc = prometheus.NewDesc(prefix+"_prefix_count_import", "Number of imported routes", labels, nil)
-	d.exportCountDesc = prometheus.NewDesc(prefix+"_prefix_count_export", "Number of exported routes", labels, nil)
-	d.filterCountDesc = prometheus.NewDesc(prefix+"_prefix_count_filter", "Number of filtered routes", labels, nil)
-	d.uptimeDesc = prometheus.NewDesc(prefix+"_uptime", "Uptime of the protocol in seconds", labels, nil)
+	d.upDesc = prometheus.NewDesc(prefix+"_session_up", "Protocol is up", labels, nil)
+	d.importCountDesc = prometheus.NewDesc(prefix+"_session_prefix_count_import", "Number of imported routes", labels, nil)
+	d.exportCountDesc = prometheus.NewDesc(prefix+"_session_prefix_count_export", "Number of exported routes", labels, nil)
+	d.filterCountDesc = prometheus.NewDesc(prefix+"_session_prefix_count_filter", "Number of filtered routes", labels, nil)
+	d.uptimeDesc = prometheus.NewDesc(prefix+"_session_uptime", "Uptime of the protocol in seconds", labels, nil)
 
 	return d
 }
