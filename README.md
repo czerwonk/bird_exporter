@@ -21,6 +21,10 @@ go get github.com/czerwonk/bird_exporter
 * imported / exported / filtered prefix counts (BGP, OSPF)
 * protocol uptimes (BGP, OSPF)
 
+## Third Party Components
+This software uses components of the following projects
+* Prometheus Go client library (github.com/prometheus/client_golang)
+
 # Prometheus
 see https://prometheus.io/
 
