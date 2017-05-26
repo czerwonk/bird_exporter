@@ -1,17 +1,17 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-const version string = "0.6.0"
+const version string = "0.7.0"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -54,65 +54,31 @@ func startServer() {
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
 
-func errorHandler(f func(io.Writer, *http.Request) error) http.HandlerFunc {
+func errorHandler(f func(http.ResponseWriter, *http.Request) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var buf bytes.Buffer
-		wr := bufio.NewWriter(&buf)
-		err := f(wr, r)
-		wr.Flush()
+		err := f(w, r)
 
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-
-		_, err = w.Write(buf.Bytes())
-
-		if err != nil {
-			log.Println(err)
-		}
 	}
 }
 
-func handleMetricsRequest(w io.Writer, r *http.Request) error {
+func handleMetricsRequest(w http.ResponseWriter, r *http.Request) error {
 	protocols, err := getProtocols()
 	if err != nil {
 		return err
 	}
 
-	for _, p := range protocols {
-		switch p.proto {
-		case BGP:
-			writeForBgpSession(p, w)
-		case OSPF:
-			writeForOspf(p, w)
-		}
+	if len(protocols) > 0 {
+		reg := prometheus.NewRegistry()
+		c := NewMetricCollectorForProtocols(protocols)
+		reg.MustRegister(c)
+
+		h := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
+		h.ServeHTTP(w, r)
 	}
 
 	return nil
-}
-
-func writeForBgpSession(p *protocol, w io.Writer) {
-	prefix := fmt.Sprintf("bgp%d_session", p.ipVersion)
-	writeForProtocol(p, prefix, w)
-}
-
-func writeForOspf(p *protocol, w io.Writer) {
-	if p.ipVersion == 4 {
-		writeForProtocol(p, "ospf", w)
-	} else {
-		writeForProtocol(p, "ospfv3", w)
-	}
-}
-
-func writeForProtocol(p *protocol, prefix string, w io.Writer) {
-	fmt.Fprintf(w, "%s_up{name=\"%s\"} %d\n", prefix, p.name, p.up)
-	fmt.Fprintf(w, "%s_prefix_count_import{name=\"%s\"} %d\n", prefix, p.name, p.imported)
-	fmt.Fprintf(w, "%s_prefix_count_export{name=\"%s\"} %d\n", prefix, p.name, p.exported)
-	fmt.Fprintf(w, "%s_prefix_count_filter{name=\"%s\"} %d\n", prefix, p.name, p.filtered)
-	fmt.Fprintf(w, "%s_uptime{name=\"%s\"} %d\n", prefix, p.name, p.uptime)
-
-	for k, v := range p.attributes {
-		fmt.Fprintf(w, "%s_%s{name=\"%s\"} %v\n", prefix, k, p.name, v)
-	}
 }

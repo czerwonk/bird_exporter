@@ -1,9 +1,13 @@
 package main
 
-import "os/exec"
+import (
+	"os/exec"
 
-func getProtocols() ([]*protocol, error) {
-	protocols := make([]*protocol, 0)
+	"github.com/czerwonk/bird_exporter/protocol"
+)
+
+func getProtocols() ([]*protocol.Protocol, error) {
+	protocols := make([]*protocol.Protocol, 0)
 
 	if *birdEnabled {
 		s, err := getProtocolsFromBird(4)
@@ -24,7 +28,7 @@ func getProtocols() ([]*protocol, error) {
 	return protocols, nil
 }
 
-func getProtocolsFromBird(ipVersion int) ([]*protocol, error) {
+func getProtocolsFromBird(ipVersion int) ([]*protocol.Protocol, error) {
 	client := *birdClient
 
 	if ipVersion == 6 {

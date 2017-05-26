@@ -3,6 +3,7 @@ package main
 import (
 	"testing"
 
+	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/czerwonk/testutils/assert"
 )
 
@@ -12,13 +13,13 @@ func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.StringEqual("name", "foo", x.name, t)
-	assert.IntEqual("proto", BGP, x.proto, t)
-	assert.IntEqual("established", 1, x.up, t)
-	assert.Int64Equal("imported", 12, x.imported, t)
-	assert.Int64Equal("exported", 34, x.exported, t)
-	assert.Int64Equal("filtered", 1, x.filtered, t)
-	assert.IntEqual("ipVersion", 4, x.ipVersion, t)
+	assert.StringEqual("name", "foo", x.Name, t)
+	assert.IntEqual("proto", protocol.BGP, x.Proto, t)
+	assert.IntEqual("established", 1, x.Up, t)
+	assert.Int64Equal("imported", 12, x.Imported, t)
+	assert.Int64Equal("exported", 34, x.Exported, t)
+	assert.Int64Equal("filtered", 1, x.Filtered, t)
+	assert.IntEqual("ipVersion", 4, x.IpVersion, t)
 }
 
 func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
@@ -27,14 +28,14 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.StringEqual("name", "foo", x.name, t)
-	assert.IntEqual("proto", BGP, x.proto, t)
-	assert.IntEqual("established", 1, x.up, t)
-	assert.Int64Equal("imported", 12, x.imported, t)
-	assert.Int64Equal("exported", 34, x.exported, t)
-	assert.Int64Equal("filtered", 1, x.filtered, t)
-	assert.IntEqual("ipVersion", 4, x.ipVersion, t)
-	assert.IntEqual("uptime", 60, x.uptime, t)
+	assert.StringEqual("name", "foo", x.Name, t)
+	assert.IntEqual("proto", protocol.BGP, x.Proto, t)
+	assert.IntEqual("established", 1, x.Up, t)
+	assert.Int64Equal("imported", 12, x.Imported, t)
+	assert.Int64Equal("exported", 34, x.Exported, t)
+	assert.Int64Equal("filtered", 1, x.Filtered, t)
+	assert.IntEqual("ipVersion", 4, x.IpVersion, t)
+	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
 
 func TestIpv6Bgp(t *testing.T) {
@@ -43,7 +44,7 @@ func TestIpv6Bgp(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.IntEqual("ipVersion", 6, x.ipVersion, t)
+	assert.IntEqual("ipVersion", 6, x.IpVersion, t)
 }
 
 func TestActiveBgp(t *testing.T) {
@@ -52,13 +53,13 @@ func TestActiveBgp(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.StringEqual("name", "bar", x.name, t)
-	assert.IntEqual("proto", BGP, x.proto, t)
-	assert.IntEqual("established", 0, x.up, t)
-	assert.IntEqual("imported", 0, int(x.imported), t)
-	assert.IntEqual("exported", 0, int(x.exported), t)
-	assert.IntEqual("ipVersion", 4, x.ipVersion, t)
-	assert.IntEqual("uptime", 0, int(x.uptime), t)
+	assert.StringEqual("name", "bar", x.Name, t)
+	assert.IntEqual("proto", protocol.BGP, x.Proto, t)
+	assert.IntEqual("established", 0, x.Up, t)
+	assert.IntEqual("imported", 0, int(x.Imported), t)
+	assert.IntEqual("exported", 0, int(x.Exported), t)
+	assert.IntEqual("ipVersion", 4, x.IpVersion, t)
+	assert.IntEqual("uptime", 0, int(x.Uptime), t)
 }
 
 func Test2BgpSessions(t *testing.T) {
@@ -73,12 +74,12 @@ func TestOspfOldTimeFormat(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.StringEqual("name", "ospf1", x.name, t)
-	assert.IntEqual("proto", OSPF, x.proto, t)
-	assert.IntEqual("up", 1, x.up, t)
-	assert.Int64Equal("imported", 12, x.imported, t)
-	assert.Int64Equal("exported", 34, x.exported, t)
-	assert.IntEqual("ipVersion", 4, x.ipVersion, t)
+	assert.StringEqual("name", "ospf1", x.Name, t)
+	assert.IntEqual("proto", protocol.OSPF, x.Proto, t)
+	assert.IntEqual("up", 1, x.Up, t)
+	assert.Int64Equal("imported", 12, x.Imported, t)
+	assert.Int64Equal("exported", 34, x.Exported, t)
+	assert.IntEqual("ipVersion", 4, x.IpVersion, t)
 }
 
 func TestOspfCurrentTimeFormat(t *testing.T) {
@@ -87,13 +88,13 @@ func TestOspfCurrentTimeFormat(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.StringEqual("name", "ospf1", x.name, t)
-	assert.IntEqual("proto", OSPF, x.proto, t)
-	assert.IntEqual("up", 1, x.up, t)
-	assert.Int64Equal("imported", 12, x.imported, t)
-	assert.Int64Equal("exported", 34, x.exported, t)
-	assert.IntEqual("ipVersion", 4, x.ipVersion, t)
-	assert.IntEqual("uptime", 60, x.uptime, t)
+	assert.StringEqual("name", "ospf1", x.Name, t)
+	assert.IntEqual("proto", protocol.OSPF, x.Proto, t)
+	assert.IntEqual("up", 1, x.Up, t)
+	assert.Int64Equal("imported", 12, x.Imported, t)
+	assert.Int64Equal("exported", 34, x.Exported, t)
+	assert.IntEqual("ipVersion", 4, x.IpVersion, t)
+	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
 
 func TestOspfProtocolDown(t *testing.T) {
@@ -102,12 +103,12 @@ func TestOspfProtocolDown(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.StringEqual("name", "o_hrz", x.name, t)
-	assert.IntEqual("proto", OSPF, x.proto, t)
-	assert.IntEqual("up", 0, x.up, t)
-	assert.Int64Equal("imported", 0, x.imported, t)
-	assert.Int64Equal("exported", 0, x.exported, t)
-	assert.IntEqual("ipVersion", 6, x.ipVersion, t)
+	assert.StringEqual("name", "o_hrz", x.Name, t)
+	assert.IntEqual("proto", protocol.OSPF, x.Proto, t)
+	assert.IntEqual("up", 0, x.Up, t)
+	assert.Int64Equal("imported", 0, x.Imported, t)
+	assert.Int64Equal("exported", 0, x.Exported, t)
+	assert.IntEqual("ipVersion", 6, x.IpVersion, t)
 }
 
 func TestOspfRunning(t *testing.T) {
@@ -116,7 +117,7 @@ func TestOspfRunning(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.IntEqual("runing", 1, x.attributes["running"].(int), t)
+	assert.Float64Equal("runing", 1, x.Attributes["running"], t)
 }
 
 func TestOspfAlone(t *testing.T) {
@@ -125,5 +126,5 @@ func TestOspfAlone(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.IntEqual("runing", 0, x.attributes["running"].(int), t)
+	assert.Float64Equal("runing", 0, x.Attributes["running"], t)
 }

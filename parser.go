@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/czerwonk/bird_exporter/protocol"
 )
 
 var (
@@ -22,12 +24,12 @@ func init() {
 	uptimeRegex, _ = regexp.Compile("^(?:((\\d+):(\\d{2}):(\\d{2}))|\\d+)$")
 }
 
-func parseOutput(data []byte, ipVersion int) []*protocol {
-	protocols := make([]*protocol, 0)
+func parseOutput(data []byte, ipVersion int) []*protocol.Protocol {
+	protocols := make([]*protocol.Protocol, 0)
 
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
-	var current *protocol = nil
+	var current *protocol.Protocol = nil
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -48,7 +50,7 @@ func parseOutput(data []byte, ipVersion int) []*protocol {
 	return protocols
 }
 
-func parseLineForProtocol(line string, ipVersion int) (*protocol, bool) {
+func parseLineForProtocol(line string, ipVersion int) (*protocol.Protocol, bool) {
 	match := protocolRegex.FindStringSubmatch(line)
 
 	if match == nil {
@@ -56,9 +58,9 @@ func parseLineForProtocol(line string, ipVersion int) (*protocol, bool) {
 	}
 
 	proto := parseProto(match[2])
-	up := parseState(match[4], proto)
+	up := parseState(match[4])
 	ut := parseUptime(match[5])
-	p := &protocol{proto: proto, name: match[1], ipVersion: ipVersion, up: up, uptime: ut, attributes: make(map[string]interface{})}
+	p := &protocol.Protocol{Proto: proto, Name: match[1], IpVersion: ipVersion, Up: up, Uptime: ut, Attributes: make(map[string]float64)}
 	fillAttributes(p, match)
 
 	return p, true
@@ -67,28 +69,28 @@ func parseLineForProtocol(line string, ipVersion int) (*protocol, bool) {
 func parseProto(val string) int {
 	switch val {
 	case "BGP":
-		return BGP
+		return protocol.BGP
 	case "OSPF":
-		return OSPF
+		return protocol.OSPF
 	}
 
-	return PROTO_UNKNOWN
+	return protocol.PROTO_UNKNOWN
 }
 
-func parseLineForRoutes(line string, p *protocol) {
+func parseLineForRoutes(line string, p *protocol.Protocol) {
 	match := routeRegex.FindStringSubmatch(line)
 
 	if match != nil {
-		p.imported, _ = strconv.ParseInt(match[1], 10, 64)
-		p.exported, _ = strconv.ParseInt(match[3], 10, 64)
+		p.Imported, _ = strconv.ParseInt(match[1], 10, 64)
+		p.Exported, _ = strconv.ParseInt(match[3], 10, 64)
 
 		if len(match[2]) > 0 {
-			p.filtered, _ = strconv.ParseInt(match[2], 10, 64)
+			p.Filtered, _ = strconv.ParseInt(match[2], 10, 64)
 		}
 	}
 }
 
-func parseState(state string, proto int) int {
+func parseState(state string) int {
 	if state == "up" {
 		return 1
 	}
@@ -145,9 +147,9 @@ func parseInt(value string) int64 {
 	return i
 }
 
-func fillAttributes(p *protocol, m []string) {
-	if p.proto == OSPF {
-		p.attributes["running"] = parseOspfRunning(m[6])
+func fillAttributes(p *protocol.Protocol, m []string) {
+	if p.Proto == protocol.OSPF {
+		p.Attributes["running"] = float64(parseOspfRunning(m[6]))
 	}
 }
 
