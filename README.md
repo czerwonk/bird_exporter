@@ -26,7 +26,7 @@ This software uses components of the following projects
 * Prometheus Go client library (https://github.com/prometheus/client_golang)
 
 ## License
-(c) Daniel Czerwonk, 2017. Licensed under [MIT](LICENSE) license.
+(c) Daniel Czerwonk, 2016. Licensed under [MIT](LICENSE) license.
 
 # Prometheus
 see https://prometheus.io/
