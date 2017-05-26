@@ -43,6 +43,7 @@ func main() {
 func printVersion() {
 	fmt.Println("bird_exporter")
 	fmt.Printf("Version: %s\n", version)
+	fmt.Println("Author(s): Daniel Czerwonk")
 	fmt.Println("Metric exporter for bird routing daemon")
 }
 
