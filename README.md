@@ -23,7 +23,7 @@ go get github.com/czerwonk/bird_exporter
 
 ## Third Party Components
 This software uses components of the following projects
-* Prometheus Go client library (github.com/prometheus/client_golang)
+* Prometheus Go client library (https://github.com/prometheus/client_golang)
 
 # Prometheus
 see https://prometheus.io/
