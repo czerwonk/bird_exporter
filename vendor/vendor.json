@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "DYv6Q1+VfnUVxMwvk5IshAClLvw=",
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "5e5dc898656f695e2a086b8e12559febbfc01562",
+			"revisionTime": "2017-05-15T10:45:16Z"
+		},
+		{
 			"checksumSHA1": "spyv5/YFBjYyZLZa1U2LBfDR8PM=",
 			"path": "github.com/beorn7/perks/quantile",
 			"revision": "4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9",
@@ -57,6 +63,12 @@
 			"revisionTime": "2017-04-27T09:54:55Z"
 		},
 		{
+			"checksumSHA1": "vfkLfDs6hXtxdJNGdWQglsxFu40=",
+			"path": "github.com/prometheus/common/log",
+			"revision": "13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207",
+			"revisionTime": "2017-04-27T09:54:55Z"
+		},
+		{
 			"checksumSHA1": "0LL9u9tfv1KPBjNEiMDP6q7lpog=",
 			"path": "github.com/prometheus/common/model",
 			"revision": "13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207",
@@ -73,6 +85,30 @@
 			"path": "github.com/prometheus/procfs/xfs",
 			"revision": "65c1f6f8f0fc1e2185eb9863a3bc751496404259",
 			"revisionTime": "2017-05-19T19:08:37Z"
+		},
+		{
+			"checksumSHA1": "J+ZM49hifaNMFSbPAEibmNoCMh8=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "a55a76086885b80f79961eacb876ebd8caf3868d",
+			"revisionTime": "2017-05-24T02:50:34Z"
+		},
+		{
+			"checksumSHA1": "2Coyr3Bq1dPkFg+ZYHEq1+/Rn58=",
+			"path": "golang.org/x/sys/windows",
+			"revision": "a55a76086885b80f79961eacb876ebd8caf3868d",
+			"revisionTime": "2017-05-24T02:50:34Z"
+		},
+		{
+			"checksumSHA1": "ZdFZFaXmCgEEaEhVPkyXrnhKhsg=",
+			"path": "golang.org/x/sys/windows/registry",
+			"revision": "a55a76086885b80f79961eacb876ebd8caf3868d",
+			"revisionTime": "2017-05-24T02:50:34Z"
+		},
+		{
+			"checksumSHA1": "uVlUSSKplihZG7N+QJ6fzDZ4Kh8=",
+			"path": "golang.org/x/sys/windows/svc/eventlog",
+			"revision": "a55a76086885b80f79961eacb876ebd8caf3868d",
+			"revisionTime": "2017-05-24T02:50:34Z"
 		}
 	],
 	"rootPath": "github.com/czerwonk/bird_exporter"
