@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/czerwonk/bird_exporter/protocol"
+	"github.com/prometheus/common/log"
 )
 
 var (
@@ -121,7 +121,7 @@ func parseUptimeForDuration(duration []string) int {
 	d, err := time.ParseDuration(str)
 
 	if err != nil {
-		log.Println(err)
+		log.Errorln(err)
 		return 0
 	}
 
@@ -140,7 +140,7 @@ func parseInt(value string) int64 {
 	i, err := strconv.ParseInt(value, 10, 64)
 
 	if err != nil {
-		log.Println(err)
+		log.Errorln(err)
 		return 0
 	}
 

@@ -49,10 +49,10 @@ func printVersion() {
 }
 
 func startServer() {
-	fmt.Printf("Starting bird exporter (Version: %s)\n", version)
+	log.Infof("Starting bird exporter (Version: %s)\n", version)
 	http.HandleFunc(*metricsPath, errorHandler(handleMetricsRequest))
 
-	fmt.Printf("Listening for %s on %s\n", *metricsPath, *listenAddress)
+	log.Infof("Listening for %s on %s\n", *metricsPath, *listenAddress)
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
 
