@@ -26,8 +26,7 @@ func init() {
 }
 
 func getDesc(prefix string) *desc {
-	labels := make([]string, 0)
-	labels = append(labels, "name")
+	labels := []string{"name"}
 
 	d := &desc{}
 	d.upDesc = prometheus.NewDesc(prefix+"_session_up", "Protocol is up", labels, nil)
