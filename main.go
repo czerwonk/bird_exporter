@@ -50,6 +50,17 @@ func printVersion() {
 
 func startServer() {
 	log.Infof("Starting bird exporter (Version: %s)\n", version)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`<html>
+			<head><title>Bird Routing Daemon Exporter (Version ` + version + `)</title></head>
+			<body>
+			<h1>Bird Routing Daemon Exporter</h1>
+			<p><a href="` + *metricsPath + `">Metrics</a></p>
+			<h2>More information:</h2>
+			<p><a href="https://github.com/czerwonk/bird_exporter">github.com/czerwonk/bird_exporter</a></p>
+			</body>
+			</html>`))
+	})
 	http.HandleFunc(*metricsPath, errorHandler(handleMetricsRequest))
 
 	log.Infof("Listening for %s on %s\n", *metricsPath, *listenAddress)
