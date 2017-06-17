@@ -15,7 +15,7 @@ const version string = "0.7.0"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
-	listenAddress = flag.String("web.listen-address", ":9200", "Address on which to expose metrics and web interface.")
+	listenAddress = flag.String("web.listen-address", ":9324", "Address on which to expose metrics and web interface.")
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	birdClient    = flag.String("bird.client", "birdc", "Binary to communicate with the bird routing daemon")
 	birdEnabled   = flag.Bool("bird.ipv4", true, "Get protocols from bird")
