@@ -13,7 +13,7 @@ To get meaningful uptime information bird has to be configured this way:
 timeformat protocol "%s";
 ```
 
-### Defualt Port
+### Default Port
 In version 0.7.1 bird_exporter the default port changed to 9324 since port 9200 is the default port of elasticsearch. The new port is now registered in the default port allocation list (https://github.com/prometheus/prometheus/wiki/Default-port-allocations)
 
 ## Install
