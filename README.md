@@ -5,7 +5,7 @@
 Metric exporter for bird routing daemon to use with Prometheus
 
 ## Remarks
-Since bird_exporter calls the bird client binary, bird has to be installed on the same mashine as bird_exporter.
+Since bird_exporter uses the bird unix sockets, bird has to be installed on the same mashine as bird_exporter. Also the user executing bird_exporter must have permission to access the bird socket files. 
 
 ### Bird configuration
 To get meaningful uptime information bird has to be configured this way:
@@ -18,7 +18,7 @@ In version 0.7.1 the default port changed to 9324 since port 9200 is the default
 
 ## Install
 ```
-go get github.com/czerwonk/bird_exporter
+go get -u github.com/czerwonk/bird_exporter
 ```
 
 ## Features
