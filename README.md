@@ -16,6 +16,9 @@ timeformat protocol "%s";
 ### Default Port
 In version 0.7.1 the default port changed to 9324 since port 9200 is the default port of elasticsearch. The new port is now registered in the default port allocation list (https://github.com/prometheus/prometheus/wiki/Default-port-allocations)
 
+### Sockets
+In version 0.8 communication to bird changed to sockets. The default socket path is ```/var/run/bird.ctl``` (for bird) and ```/var/run/bird6.ctl``` (for bird6). In case you are using different paths in your installation, the socket path can be specified by usind the ```-bird.socket``` (for bird) and ```-bird.socket6``` (for bird6) flag.
+
 ## Install
 ```
 go get -u github.com/czerwonk/bird_exporter
