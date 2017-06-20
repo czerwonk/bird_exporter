@@ -19,7 +19,7 @@ var (
 )
 
 func init() {
-	protocolRegex, _ = regexp.Compile("^([^\\s]+)\\s+(BGP|OSPF)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+(.*?)\\s*$")
+	protocolRegex, _ = regexp.Compile("^(?:1002\\-)?([^\\s]+)\\s+(BGP|OSPF)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+(.*?)\\s*$")
 	routeRegex, _ = regexp.Compile("^\\s+Routes:\\s+(\\d+) imported, (?:(\\d+) filtered, )?(\\d+) exported")
 	uptimeRegex, _ = regexp.Compile("^(?:((\\d+):(\\d{2}):(\\d{2}))|\\d+)$")
 }
