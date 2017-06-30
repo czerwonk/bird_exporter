@@ -15,6 +15,12 @@
 			"revisionTime": "2016-08-04T10:47:26Z"
 		},
 		{
+			"checksumSHA1": "VWyPYxK+wZvIA4xcxiQftPmLcxE=",
+			"path": "github.com/czerwonk/bird_socket",
+			"revision": "c8361d5052354b111d4336dac81414792b580a7b",
+			"revisionTime": "2017-06-30T14:48:00Z"
+		},
+		{
 			"checksumSHA1": "N4WKFoRf6d0PYFjgHkjuz3v2lcA=",
 			"path": "github.com/czerwonk/testutils/assert",
 			"revision": "b1a52ed26acf6fd5536b55224257cd7fb0aa04de",
