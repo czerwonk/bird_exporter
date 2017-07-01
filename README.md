@@ -1,6 +1,6 @@
 # bird_exporter 
-[![Build Status](https://travis-ci.org/czerwonk/bird_exporter.svg)][travis]
-[![Go Report Card](https://goreportcard.com/badge/github.com/czerwonk/bird_exporter)][goreportcard]
+[![Build Status](https://travis-ci.org/czerwonk/bird_exporter.svg)](https://travis-ci.org/czerwonk/bird_exporter)
+[![Go Report Card](https://goreportcard.com/badge/github.com/czerwonk/bird_exporter)](https://goreportcard.com/report/github.com/czerwonk/bird_exporter)
 
 Metric exporter for bird routing daemon to use with Prometheus
 
@@ -41,6 +41,3 @@ see https://prometheus.io/
 
 ## Bird routing daemon
 see http://bird.network.cz/
-
-[travis]: https://travis-ci.org/czerwonk/bird_exporter
-[goreportcard]: https://goreportcard.com/report/github.com/czerwonk/bird_exporter
