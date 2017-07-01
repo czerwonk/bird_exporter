@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/czerwonk/bird_exporter/protocol"
-	"github.com/czerwonk/birdsocket"
+	"github.com/czerwonk/bird_socket"
 )
 
 func getProtocols() ([]*protocol.Protocol, error) {
