@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/czerwonk/bird_exporter/protocol"
-	"github.com/czerwonk/bird_socket"
+	"github.com/czerwonk/birdsocket"
 )
 
 func getProtocols() ([]*protocol.Protocol, error) {
@@ -28,7 +28,7 @@ func getProtocols() ([]*protocol.Protocol, error) {
 }
 
 func getProtocolsFromBird(socketPath string, ipVersion int) ([]*protocol.Protocol, error) {
-	b, err := bird_socket.Query(socketPath, "show protocols all")
+	b, err := birdsocket.Query(socketPath, "show protocols all")
 	if err != nil {
 		return nil, err
 	}
