@@ -8,11 +8,12 @@ import (
 var descriptions map[int]*desc
 
 type desc struct {
-	upDesc          *prometheus.Desc
-	importCountDesc *prometheus.Desc
-	exportCountDesc *prometheus.Desc
-	filterCountDesc *prometheus.Desc
-	uptimeDesc      *prometheus.Desc
+	upDesc             *prometheus.Desc
+	importCountDesc    *prometheus.Desc
+	exportCountDesc    *prometheus.Desc
+	filterCountDesc    *prometheus.Desc
+	preferredCountDesc *prometheus.Desc
+	uptimeDesc         *prometheus.Desc
 }
 
 type BgpMetric struct {
@@ -33,6 +34,7 @@ func getDesc(prefix string) *desc {
 	d.importCountDesc = prometheus.NewDesc(prefix+"_session_prefix_count_import", "Number of imported routes", labels, nil)
 	d.exportCountDesc = prometheus.NewDesc(prefix+"_session_prefix_count_export", "Number of exported routes", labels, nil)
 	d.filterCountDesc = prometheus.NewDesc(prefix+"_session_prefix_count_filter", "Number of filtered routes", labels, nil)
+	d.preferredCountDesc = prometheus.NewDesc(prefix+"_session_prefix_count_preferred", "Number of preferred routes", labels, nil)
 	d.uptimeDesc = prometheus.NewDesc(prefix+"_session_uptime", "Uptime of the protocol in seconds", labels, nil)
 
 	return d
@@ -43,6 +45,7 @@ func (m *BgpMetric) Describe(ch chan<- *prometheus.Desc) {
 	ch <- descriptions[m.Protocol.IpVersion].importCountDesc
 	ch <- descriptions[m.Protocol.IpVersion].exportCountDesc
 	ch <- descriptions[m.Protocol.IpVersion].filterCountDesc
+	ch <- descriptions[m.Protocol.IpVersion].preferredCountDesc
 	ch <- descriptions[m.Protocol.IpVersion].uptimeDesc
 }
 
@@ -51,5 +54,6 @@ func (m *BgpMetric) GetMetrics(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(descriptions[m.Protocol.IpVersion].importCountDesc, prometheus.GaugeValue, float64(m.Protocol.Imported), m.Protocol.Name)
 	ch <- prometheus.MustNewConstMetric(descriptions[m.Protocol.IpVersion].exportCountDesc, prometheus.GaugeValue, float64(m.Protocol.Exported), m.Protocol.Name)
 	ch <- prometheus.MustNewConstMetric(descriptions[m.Protocol.IpVersion].filterCountDesc, prometheus.GaugeValue, float64(m.Protocol.Filtered), m.Protocol.Name)
+	ch <- prometheus.MustNewConstMetric(descriptions[m.Protocol.IpVersion].preferredCountDesc, prometheus.GaugeValue, float64(m.Protocol.Preferred), m.Protocol.Name)
 	ch <- prometheus.MustNewConstMetric(descriptions[m.Protocol.IpVersion].uptimeDesc, prometheus.GaugeValue, float64(m.Protocol.Uptime), m.Protocol.Name)
 }

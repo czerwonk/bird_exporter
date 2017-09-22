@@ -19,6 +19,7 @@ func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("filtered", 1, x.Filtered, t)
+	assert.Int64Equal("preferred", 100, x.Preferred, t)
 	assert.IntEqual("ipVersion", 4, x.IpVersion, t)
 }
 
@@ -34,6 +35,7 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("filtered", 1, x.Filtered, t)
+	assert.Int64Equal("preferred", 100, x.Preferred, t)
 	assert.IntEqual("ipVersion", 4, x.IpVersion, t)
 	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
@@ -79,6 +81,7 @@ func TestOspfOldTimeFormat(t *testing.T) {
 	assert.IntEqual("up", 1, x.Up, t)
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
+	assert.Int64Equal("preferred", 100, x.Preferred, t)
 	assert.IntEqual("ipVersion", 4, x.IpVersion, t)
 }
 
@@ -93,6 +96,7 @@ func TestOspfCurrentTimeFormat(t *testing.T) {
 	assert.IntEqual("up", 1, x.Up, t)
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
+	assert.Int64Equal("preferred", 100, x.Preferred, t)
 	assert.IntEqual("ipVersion", 4, x.IpVersion, t)
 	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
