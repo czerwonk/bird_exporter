@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"strings"
+
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/common/log"
 )
@@ -32,7 +34,7 @@ func parseOutput(data []byte, ipVersion int) []*protocol.Protocol {
 	var current *protocol.Protocol = nil
 
 	for scanner.Scan() {
-		line := scanner.Text()
+		line := strings.TrimRight(scanner.Text(), " ")
 		if p, ok := parseLineForProtocol(line, ipVersion); ok {
 			current = p
 			protocols = append(protocols, current)
