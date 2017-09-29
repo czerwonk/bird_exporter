@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"time"
-
 	"strings"
+	"time"
 
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/common/log"
