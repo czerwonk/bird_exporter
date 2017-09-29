@@ -21,7 +21,7 @@ var (
 
 func init() {
 	protocolRegex, _ = regexp.Compile("^(?:1002\\-)?([^\\s]+)\\s+(BGP|OSPF)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+(.*?)\\s*$")
-	routeRegex, _ = regexp.Compile("^\\s+Routes:\\s+(\\d+) imported, (?:(\\d+) filtered, )?(\\d+) exported")
+	routeRegex, _ = regexp.Compile("^\\s+Routes:\\s+(\\d+) imported, (?:(\\d+) filtered, )?(\\d+) exported(?:, (\\d+) preferred)?")
 	uptimeRegex, _ = regexp.Compile("^(?:((\\d+):(\\d{2}):(\\d{2}))|\\d+)$")
 }
 
@@ -87,6 +87,10 @@ func parseLineForRoutes(line string, p *protocol.Protocol) {
 
 		if len(match[2]) > 0 {
 			p.Filtered, _ = strconv.ParseInt(match[2], 10, 64)
+		}
+
+		if len(match[4]) > 0 {
+			p.Preferred, _ = strconv.ParseInt(match[4], 10, 64)
 		}
 	}
 }

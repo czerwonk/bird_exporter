@@ -14,6 +14,7 @@ type Protocol struct {
 	Imported   int64
 	Exported   int64
 	Filtered   int64
+	Preferred  int64
 	Uptime     int
 	Attributes map[string]float64
 }
