@@ -2,46 +2,48 @@ package main
 
 import (
 	"github.com/czerwonk/bird_exporter/bgp"
+	"github.com/czerwonk/bird_exporter/device"
+	"github.com/czerwonk/bird_exporter/direct"
+	"github.com/czerwonk/bird_exporter/kernel"
 	"github.com/czerwonk/bird_exporter/ospf"
 	"github.com/czerwonk/bird_exporter/protocol"
+	"github.com/czerwonk/bird_exporter/static"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+type MetricExporter interface {
+	Describe(ch chan<- *prometheus.Desc)
+	Export(p *protocol.Protocol, ch chan<- prometheus.Metric)
+}
+
 type MetricCollector struct {
-	collectors []prometheus.Collector
+	protocols []*protocol.Protocol
+	exporters map[int]MetricExporter
 }
 
 func NewMetricCollectorForProtocols(protocols []*protocol.Protocol) *MetricCollector {
-	b := make([]*protocol.Protocol, 0)
-	o := make([]*protocol.Protocol, 0)
-
-	for _, p := range protocols {
-		if p.Proto == protocol.BGP {
-			b = append(b, p)
-		} else if p.Proto == protocol.OSPF {
-			o = append(o, p)
-		}
+	e := map[int]MetricExporter{
+		protocol.BGP:    &bgp.BgpMetricExporter{},
+		protocol.Device: &device.DeviceMetricExporter{},
+		protocol.Direct: &direct.DirectMetricExporter{},
+		protocol.Kernel: &kernel.KernelMetricExporter{},
+		protocol.OSPF:   &ospf.OspfMetricExporter{},
+		protocol.Static: &static.StaticMetricExporter{},
 	}
 
-	c := make([]prometheus.Collector, 0)
-	if len(b) > 0 {
-		c = append(c, bgp.NewCollector(b))
-	}
-	if len(o) > 0 {
-		c = append(c, ospf.NewCollector(o))
-	}
-
-	return &MetricCollector{collectors: c}
+	return &MetricCollector{protocols: protocols, exporters: e}
 }
 
 func (m *MetricCollector) Describe(ch chan<- *prometheus.Desc) {
-	for _, c := range m.collectors {
-		c.Describe(ch)
+	for _, v := range m.exporters {
+		v.Describe(ch)
 	}
 }
 
 func (m *MetricCollector) Collect(ch chan<- prometheus.Metric) {
-	for _, c := range m.collectors {
-		c.Collect(ch)
+	for _, p := range m.protocols {
+		if p.Proto != protocol.PROTO_UNKNOWN {
+			m.exporters[p.Proto].Export(p, ch)
+		}
 	}
 }

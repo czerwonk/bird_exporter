@@ -7,8 +7,7 @@ import (
 
 var exporter map[int]*protocol.GenericProtocolMetricExporter
 
-type BgpCollector struct {
-	protocols []*protocol.Protocol
+type BgpMetricExporter struct {
 }
 
 func init() {
@@ -17,17 +16,11 @@ func init() {
 	exporter[6] = protocol.NewGenericProtocolMetricExporter("bgp6_session")
 }
 
-func NewCollector(p []*protocol.Protocol) prometheus.Collector {
-	return &BgpCollector{protocols: p}
-}
-
-func (m *BgpCollector) Describe(ch chan<- *prometheus.Desc) {
+func (*BgpMetricExporter) Describe(ch chan<- *prometheus.Desc) {
 	exporter[4].Describe(ch)
 	exporter[6].Describe(ch)
 }
 
-func (m *BgpCollector) Collect(ch chan<- prometheus.Metric) {
-	for _, p := range m.protocols {
-		exporter[p.IpVersion].Export(p, ch)
-	}
+func (*BgpMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric) {
+	exporter[p.IpVersion].Export(p, ch)
 }

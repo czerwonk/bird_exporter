@@ -12,8 +12,7 @@ type desc struct {
 	runningDesc *prometheus.Desc
 }
 
-type OspfCollector struct {
-	protocols []*protocol.Protocol
+type OspfMetricExporter struct {
 }
 
 func init() {
@@ -35,20 +34,14 @@ func getDesc(prefix string) *desc {
 	return d
 }
 
-func NewCollector(p []*protocol.Protocol) prometheus.Collector {
-	return &OspfCollector{protocols: p}
-}
-
-func (m *OspfCollector) Describe(ch chan<- *prometheus.Desc) {
+func (*OspfMetricExporter) Describe(ch chan<- *prometheus.Desc) {
 	exporter[4].Describe(ch)
 	exporter[6].Describe(ch)
 	ch <- descriptions[4].runningDesc
 	ch <- descriptions[6].runningDesc
 }
 
-func (m *OspfCollector) Collect(ch chan<- prometheus.Metric) {
-	for _, p := range m.protocols {
-		exporter[p.IpVersion].Export(p, ch)
-		ch <- prometheus.MustNewConstMetric(descriptions[p.IpVersion].runningDesc, prometheus.GaugeValue, p.Attributes["running"], p.Name)
-	}
+func (*OspfMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric) {
+	exporter[p.IpVersion].Export(p, ch)
+	ch <- prometheus.MustNewConstMetric(descriptions[p.IpVersion].runningDesc, prometheus.GaugeValue, p.Attributes["running"], p.Name)
 }

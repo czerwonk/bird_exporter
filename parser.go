@@ -21,7 +21,7 @@ var (
 )
 
 func init() {
-	protocolRegex = regexp.MustCompile("^(?:1002\\-)?([^\\s]+)\\s+(BGP|OSPF)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)(?:\\s+(.*?))?$")
+	protocolRegex = regexp.MustCompile("^(?:1002\\-)?([^\\s]+)\\s+(BGP|OSPF|Direct|Device|Kernel)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)(?:\\s+(.*?))?$")
 	routeRegex = regexp.MustCompile("^\\s+Routes:\\s+(\\d+) imported, (?:(\\d+) filtered, )?(\\d+) exported(?:, (\\d+) preferred)?")
 	uptimeRegex = regexp.MustCompile("^(?:((\\d+):(\\d{2}):(\\d{2}))|\\d+)$")
 	routeChangeRegex = regexp.MustCompile("(Import|Export) (updates|withdraws):\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s*")
@@ -78,6 +78,12 @@ func parseProto(val string) int {
 		return protocol.BGP
 	case "OSPF":
 		return protocol.OSPF
+	case "Direct":
+		return protocol.Direct
+	case "Device":
+		return protocol.Device
+	case "Kernel":
+		return protocol.Kernel
 	}
 
 	return protocol.PROTO_UNKNOWN

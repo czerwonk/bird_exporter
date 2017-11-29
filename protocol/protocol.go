@@ -4,6 +4,10 @@ const (
 	PROTO_UNKNOWN = 0
 	BGP           = 1
 	OSPF          = 2
+	Kernel        = 3
+	Static        = 4
+	Direct        = 5
+	Device        = 6
 )
 
 type Protocol struct {
