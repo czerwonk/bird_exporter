@@ -8,7 +8,6 @@ import (
 var exporter map[int]*protocol.GenericProtocolMetricExporter
 
 type DirectMetricExporter struct {
-	protocols []*protocol.Protocol
 }
 
 func init() {
