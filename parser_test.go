@@ -70,6 +70,39 @@ func Test2BgpSessions(t *testing.T) {
 	assert.IntEqual("protocols", 2, len(p), t)
 }
 
+func TestUpdateAndWithdrawCounts(t *testing.T) {
+	data := "foo    BGP      master   up     00:01:00  Established\ntest\n" +
+		"  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\n" +
+		"  Route change stats:     received   rejected   filtered    ignored   accepted\n" +
+		"    Import updates:              1          2          3          4          5\n" +
+		"    Import withdraws:            6          7          8          9         10\n" +
+		"    Export updates:             11         12         13         14         15\n" +
+		"    Export withdraws:           16         17         18         19        ---"
+	p := parseOutput([]byte(data), 4)
+	x := p[0]
+
+	assert.Int64Equal("import updates received", 1, x.ImportUpdates.Received, t)
+	assert.Int64Equal("import updates rejected", 2, x.ImportUpdates.Rejected, t)
+	assert.Int64Equal("import updates filtered", 3, x.ImportUpdates.Filtered, t)
+	assert.Int64Equal("import updates ignored", 4, x.ImportUpdates.Ignored, t)
+	assert.Int64Equal("import updates accepted", 5, x.ImportUpdates.Accepted, t)
+	assert.Int64Equal("import withdraws received", 6, x.ImportWithdraws.Received, t)
+	assert.Int64Equal("import withdraws rejected", 7, x.ImportWithdraws.Rejected, t)
+	assert.Int64Equal("import withdraws filtered", 8, x.ImportWithdraws.Filtered, t)
+	assert.Int64Equal("import withdraws ignored", 9, x.ImportWithdraws.Ignored, t)
+	assert.Int64Equal("import withdraws accepted", 10, x.ImportWithdraws.Accepted, t)
+	assert.Int64Equal("export updates received", 11, x.ExportUpdates.Received, t)
+	assert.Int64Equal("export updates rejected", 12, x.ExportUpdates.Rejected, t)
+	assert.Int64Equal("export updates filtered", 13, x.ExportUpdates.Filtered, t)
+	assert.Int64Equal("export updates ignored", 14, x.ExportUpdates.Ignored, t)
+	assert.Int64Equal("export updates accepted", 15, x.ExportUpdates.Accepted, t)
+	assert.Int64Equal("export withdraws received", 16, x.ExportWithdraws.Received, t)
+	assert.Int64Equal("export withdraws rejected", 17, x.ExportWithdraws.Rejected, t)
+	assert.Int64Equal("export withdraws filtered", 18, x.ExportWithdraws.Filtered, t)
+	assert.Int64Equal("export withdraws ignored", 19, x.ExportWithdraws.Ignored, t)
+	assert.Int64Equal("export withdraws accepted", 0, x.ExportWithdraws.Accepted, t)
+}
+
 func TestOspfOldTimeFormat(t *testing.T) {
 	data := "ospf1    OSPF      master   up     1481973060  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
 	p := parseOutput([]byte(data), 4)
