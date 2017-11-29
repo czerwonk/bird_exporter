@@ -26,7 +26,7 @@ go get -u github.com/czerwonk/bird_exporter
 
 ## Features
 * BGP session state
-* imported / exported / filtered prefix counts (BGP, OSPF)
+* imported / exported / filtered prefix counts / route state changes (BGP, OSPF, Kernel, Static, Device, Direct)
 * protocol uptimes (BGP, OSPF)
 
 ## Third Party Components
