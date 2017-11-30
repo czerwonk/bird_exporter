@@ -1,7 +1,8 @@
-package protocol
+package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/czerwonk/bird_exporter/protocol"
 )
 
 type ProtocolMetricExporter struct {
@@ -9,10 +10,10 @@ type ProtocolMetricExporter struct {
 	ipv6Exporter *GenericProtocolMetricExporter
 }
 
-func NewMetricExporter(prefixIpv4, prefixIpv6 string) *ProtocolMetricExporter {
+func NewMetricExporter(prefixIpv4, prefixIpv6 string, labelStrategy LabelStrategy) *ProtocolMetricExporter {
 	return &ProtocolMetricExporter{
-		ipv4Exporter: NewGenericProtocolMetricExporter(prefixIpv4),
-		ipv6Exporter: NewGenericProtocolMetricExporter(prefixIpv6),
+		ipv4Exporter: NewGenericProtocolMetricExporter(prefixIpv4, labelStrategy),
+		ipv6Exporter: NewGenericProtocolMetricExporter(prefixIpv6, labelStrategy),
 	}
 }
 
@@ -21,7 +22,7 @@ func (e *ProtocolMetricExporter) Describe(ch chan<- *prometheus.Desc) {
 	e.ipv6Exporter.Describe(ch)
 }
 
-func (e *ProtocolMetricExporter) Export(p *Protocol, ch chan<- prometheus.Metric) {
+func (e *ProtocolMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric) {
 	if p.IpVersion == 4 {
 		e.ipv4Exporter.Export(p, ch)
 	} else {

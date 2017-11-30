@@ -1,8 +1,12 @@
-package protocol
+package metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/czerwonk/bird_exporter/protocol"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 type GenericProtocolMetricExporter struct {
+	labelStrategy                   LabelStrategy
 	upDesc                          *prometheus.Desc
 	importCountDesc                 *prometheus.Desc
 	exportCountDesc                 *prometheus.Desc
@@ -31,15 +35,15 @@ type GenericProtocolMetricExporter struct {
 	withdrawsExportAcceptCountDesc  *prometheus.Desc
 }
 
-func NewGenericProtocolMetricExporter(prefix string) *GenericProtocolMetricExporter {
-	m := &GenericProtocolMetricExporter{}
+func NewGenericProtocolMetricExporter(prefix string, labelStrategy LabelStrategy) *GenericProtocolMetricExporter {
+	m := &GenericProtocolMetricExporter{labelStrategy: labelStrategy}
 	m.initDesc(prefix)
 
 	return m
 }
 
 func (m *GenericProtocolMetricExporter) initDesc(prefix string) {
-	labels := []string{"name"}
+	labels := m.labelStrategy.labelNames()
 	m.upDesc = prometheus.NewDesc(prefix+"_up", "Protocol is up", labels, nil)
 	m.importCountDesc = prometheus.NewDesc(prefix+"_prefix_count_import", "Number of imported routes", labels, nil)
 	m.exportCountDesc = prometheus.NewDesc(prefix+"_prefix_count_export", "Number of exported routes", labels, nil)
@@ -97,31 +101,32 @@ func (m *GenericProtocolMetricExporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- m.withdrawsExportReceiveCountDesc
 }
 
-func (m *GenericProtocolMetricExporter) Export(protocol *Protocol, ch chan<- prometheus.Metric) {
-	ch <- prometheus.MustNewConstMetric(m.upDesc, prometheus.GaugeValue, float64(protocol.Up), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.importCountDesc, prometheus.GaugeValue, float64(protocol.Imported), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.exportCountDesc, prometheus.GaugeValue, float64(protocol.Exported), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.filterCountDesc, prometheus.GaugeValue, float64(protocol.Filtered), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.preferredCountDesc, prometheus.GaugeValue, float64(protocol.Preferred), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.uptimeDesc, prometheus.GaugeValue, float64(protocol.Uptime), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.updatesImportReceiveCountDesc, prometheus.GaugeValue, float64(protocol.ImportUpdates.Received), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.updatesImportRejectCountDesc, prometheus.GaugeValue, float64(protocol.ImportUpdates.Rejected), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.updatesImportFilterCountDesc, prometheus.GaugeValue, float64(protocol.ImportUpdates.Filtered), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.updatesImportAcceptCountDesc, prometheus.GaugeValue, float64(protocol.ImportUpdates.Accepted), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.updatesImportIgnoreCountDesc, prometheus.GaugeValue, float64(protocol.ImportUpdates.Ignored), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.updatesExportReceiveCountDesc, prometheus.GaugeValue, float64(protocol.ExportUpdates.Received), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.updatesExportRejectCountDesc, prometheus.GaugeValue, float64(protocol.ExportUpdates.Rejected), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.updatesExportFilterCountDesc, prometheus.GaugeValue, float64(protocol.ExportUpdates.Filtered), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.updatesExportAcceptCountDesc, prometheus.GaugeValue, float64(protocol.ExportUpdates.Accepted), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.updatesExportIgnoreCountDesc, prometheus.GaugeValue, float64(protocol.ExportUpdates.Ignored), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.withdrawsImportReceiveCountDesc, prometheus.GaugeValue, float64(protocol.ImportWithdraws.Received), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.withdrawsImportRejectCountDesc, prometheus.GaugeValue, float64(protocol.ImportWithdraws.Rejected), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.withdrawsImportFilterCountDesc, prometheus.GaugeValue, float64(protocol.ImportWithdraws.Filtered), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.withdrawsImportAcceptCountDesc, prometheus.GaugeValue, float64(protocol.ImportWithdraws.Accepted), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.withdrawsImportIgnoreCountDesc, prometheus.GaugeValue, float64(protocol.ImportWithdraws.Ignored), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.withdrawsExportReceiveCountDesc, prometheus.GaugeValue, float64(protocol.ExportWithdraws.Received), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.withdrawsExportRejectCountDesc, prometheus.GaugeValue, float64(protocol.ExportWithdraws.Rejected), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.withdrawsExportFilterCountDesc, prometheus.GaugeValue, float64(protocol.ExportWithdraws.Filtered), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.withdrawsExportAcceptCountDesc, prometheus.GaugeValue, float64(protocol.ExportWithdraws.Accepted), protocol.Name)
-	ch <- prometheus.MustNewConstMetric(m.withdrawsExportIgnoreCountDesc, prometheus.GaugeValue, float64(protocol.ExportWithdraws.Ignored), protocol.Name)
+func (m *GenericProtocolMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric) {
+	l := m.labelStrategy.labelValues(p)
+	ch <- prometheus.MustNewConstMetric(m.upDesc, prometheus.GaugeValue, float64(p.Up), l...)
+	ch <- prometheus.MustNewConstMetric(m.importCountDesc, prometheus.GaugeValue, float64(p.Imported), l...)
+	ch <- prometheus.MustNewConstMetric(m.exportCountDesc, prometheus.GaugeValue, float64(p.Exported), l...)
+	ch <- prometheus.MustNewConstMetric(m.filterCountDesc, prometheus.GaugeValue, float64(p.Filtered), l...)
+	ch <- prometheus.MustNewConstMetric(m.preferredCountDesc, prometheus.GaugeValue, float64(p.Preferred), l...)
+	ch <- prometheus.MustNewConstMetric(m.uptimeDesc, prometheus.GaugeValue, float64(p.Uptime), l...)
+	ch <- prometheus.MustNewConstMetric(m.updatesImportReceiveCountDesc, prometheus.GaugeValue, float64(p.ImportUpdates.Received), l...)
+	ch <- prometheus.MustNewConstMetric(m.updatesImportRejectCountDesc, prometheus.GaugeValue, float64(p.ImportUpdates.Rejected), l...)
+	ch <- prometheus.MustNewConstMetric(m.updatesImportFilterCountDesc, prometheus.GaugeValue, float64(p.ImportUpdates.Filtered), l...)
+	ch <- prometheus.MustNewConstMetric(m.updatesImportAcceptCountDesc, prometheus.GaugeValue, float64(p.ImportUpdates.Accepted), l...)
+	ch <- prometheus.MustNewConstMetric(m.updatesImportIgnoreCountDesc, prometheus.GaugeValue, float64(p.ImportUpdates.Ignored), l...)
+	ch <- prometheus.MustNewConstMetric(m.updatesExportReceiveCountDesc, prometheus.GaugeValue, float64(p.ExportUpdates.Received), l...)
+	ch <- prometheus.MustNewConstMetric(m.updatesExportRejectCountDesc, prometheus.GaugeValue, float64(p.ExportUpdates.Rejected), l...)
+	ch <- prometheus.MustNewConstMetric(m.updatesExportFilterCountDesc, prometheus.GaugeValue, float64(p.ExportUpdates.Filtered), l...)
+	ch <- prometheus.MustNewConstMetric(m.updatesExportAcceptCountDesc, prometheus.GaugeValue, float64(p.ExportUpdates.Accepted), l...)
+	ch <- prometheus.MustNewConstMetric(m.updatesExportIgnoreCountDesc, prometheus.GaugeValue, float64(p.ExportUpdates.Ignored), l...)
+	ch <- prometheus.MustNewConstMetric(m.withdrawsImportReceiveCountDesc, prometheus.GaugeValue, float64(p.ImportWithdraws.Received), l...)
+	ch <- prometheus.MustNewConstMetric(m.withdrawsImportRejectCountDesc, prometheus.GaugeValue, float64(p.ImportWithdraws.Rejected), l...)
+	ch <- prometheus.MustNewConstMetric(m.withdrawsImportFilterCountDesc, prometheus.GaugeValue, float64(p.ImportWithdraws.Filtered), l...)
+	ch <- prometheus.MustNewConstMetric(m.withdrawsImportAcceptCountDesc, prometheus.GaugeValue, float64(p.ImportWithdraws.Accepted), l...)
+	ch <- prometheus.MustNewConstMetric(m.withdrawsImportIgnoreCountDesc, prometheus.GaugeValue, float64(p.ImportWithdraws.Ignored), l...)
+	ch <- prometheus.MustNewConstMetric(m.withdrawsExportReceiveCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Received), l...)
+	ch <- prometheus.MustNewConstMetric(m.withdrawsExportRejectCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Rejected), l...)
+	ch <- prometheus.MustNewConstMetric(m.withdrawsExportFilterCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Filtered), l...)
+	ch <- prometheus.MustNewConstMetric(m.withdrawsExportAcceptCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Accepted), l...)
+	ch <- prometheus.MustNewConstMetric(m.withdrawsExportIgnoreCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Ignored), l...)
 }

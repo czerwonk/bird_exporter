@@ -5,11 +5,12 @@ import (
 
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/czerwonk/testutils/assert"
+	"github.com/czerwonk/bird_exporter/parser"
 )
 
 func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	data := "foo    BGP      master   up     1481973060  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
-	p := parseOutput([]byte(data), 4)
+	p := parser.Parse([]byte(data), 4)
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -25,7 +26,7 @@ func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 
 func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 	data := "foo    BGP      master   up     00:01:00  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
-	p := parseOutput([]byte(data), 4)
+	p := parser.Parse([]byte(data), 4)
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -42,7 +43,7 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 
 func TestIpv6Bgp(t *testing.T) {
 	data := "foo    BGP      master   up     00:01:00  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
-	p := parseOutput([]byte(data), 6)
+	p := parser.Parse([]byte(data), 6)
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -51,7 +52,7 @@ func TestIpv6Bgp(t *testing.T) {
 
 func TestActiveBgp(t *testing.T) {
 	data := "bar    BGP      master   start   2016-01-01    Active\ntest\nbar"
-	p := parseOutput([]byte(data), 4)
+	p := parser.Parse([]byte(data), 4)
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -66,7 +67,7 @@ func TestActiveBgp(t *testing.T) {
 
 func Test2BgpSessions(t *testing.T) {
 	data := "foo    BGP      master   up     00:01:00  Established\ntest\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nbar    BGP      master   start   2016-01-01    Active\nxxx"
-	p := parseOutput([]byte(data), 4)
+	p := parser.Parse([]byte(data), 4)
 	assert.IntEqual("protocols", 2, len(p), t)
 }
 
@@ -78,7 +79,7 @@ func TestUpdateAndWithdrawCounts(t *testing.T) {
 		"    Import withdraws:            6          7          8          9         10\n" +
 		"    Export updates:             11         12         13         14         15\n" +
 		"    Export withdraws:           16         17         18         19        ---"
-	p := parseOutput([]byte(data), 4)
+	p := parser.Parse([]byte(data), 4)
 	x := p[0]
 
 	assert.Int64Equal("import updates received", 1, x.ImportUpdates.Received, t)
@@ -105,7 +106,7 @@ func TestUpdateAndWithdrawCounts(t *testing.T) {
 
 func TestOspfOldTimeFormat(t *testing.T) {
 	data := "ospf1    OSPF      master   up     1481973060  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
-	p := parseOutput([]byte(data), 4)
+	p := parser.Parse([]byte(data), 4)
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -120,7 +121,7 @@ func TestOspfOldTimeFormat(t *testing.T) {
 
 func TestOspfCurrentTimeFormat(t *testing.T) {
 	data := "ospf1    OSPF      master   up     00:01:00  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
-	p := parseOutput([]byte(data), 4)
+	p := parser.Parse([]byte(data), 4)
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -136,7 +137,7 @@ func TestOspfCurrentTimeFormat(t *testing.T) {
 
 func TestOspfProtocolDown(t *testing.T) {
 	data := "o_hrz    OSPF     t_hrz    down   1494926415  \n  Preference:     150\n  Input filter:   ACCEPT\n  Output filter:  REJECT\nxxx"
-	p := parseOutput([]byte(data), 6)
+	p := parser.Parse([]byte(data), 6)
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -150,7 +151,7 @@ func TestOspfProtocolDown(t *testing.T) {
 
 func TestOspfRunning(t *testing.T) {
 	data := "ospf1    OSPF      master   up     00:01:00  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
-	p := parseOutput([]byte(data), 4)
+	p := parser.Parse([]byte(data), 4)
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -159,7 +160,7 @@ func TestOspfRunning(t *testing.T) {
 
 func TestOspfAlone(t *testing.T) {
 	data := "ospf1    OSPF      master   up     00:01:00  Alone\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
-	p := parseOutput([]byte(data), 4)
+	p := parser.Parse([]byte(data), 4)
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]

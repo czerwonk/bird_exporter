@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"bufio"
@@ -27,7 +27,8 @@ func init() {
 	routeChangeRegex = regexp.MustCompile("(Import|Export) (updates|withdraws):\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s*")
 }
 
-func parseOutput(data []byte, ipVersion int) []*protocol.Protocol {
+// Parser parses bird output and returns protocol.Protocol structs
+func Parse(data []byte, ipVersion int) []*protocol.Protocol {
 	protocols := make([]*protocol.Protocol, 0)
 
 	reader := bytes.NewReader(data)
