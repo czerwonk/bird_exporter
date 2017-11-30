@@ -1,29 +1,25 @@
 package ospf
 
 import (
-	"github.com/czerwonk/bird_exporter/metrics"
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/czerwonk/bird_exporter/metrics"
 )
-
-var descriptions map[int]*desc
 
 type desc struct {
 	runningDesc *prometheus.Desc
 }
 
-type OspfMetricExporter struct {
-	genericExporter *metrics.ProtocolMetricExporter
+type ospfMetricExporter struct {
+	descriptions map[int]*desc
 }
 
-func init() {
-	descriptions = make(map[int]*desc)
-	descriptions[4] = getDesc("ospf")
-	descriptions[6] = getDesc("ospfv3")
-}
+func NewExporter(prefix string) metrics.MetricExporter {
+	d := make(map[int]*desc)
+	d[4] = getDesc(prefix+"ospf")
+	d[6] = getDesc(prefix+"ospfv3")
 
-func NewExporter(labelStrategy metrics.LabelStrategy) *OspfMetricExporter {
-	return &OspfMetricExporter{genericExporter: metrics.NewMetricExporter("ospf", "ospfv3", labelStrategy)}
+	return &ospfMetricExporter{descriptions: d}
 }
 
 func getDesc(prefix string) *desc {
@@ -35,13 +31,11 @@ func getDesc(prefix string) *desc {
 	return d
 }
 
-func (m *OspfMetricExporter) Describe(ch chan<- *prometheus.Desc) {
-	m.genericExporter.Describe(ch)
-	ch <- descriptions[4].runningDesc
-	ch <- descriptions[6].runningDesc
+func (m *ospfMetricExporter) Describe(ch chan<- *prometheus.Desc) {
+	ch <- m.descriptions[4].runningDesc
+	ch <- m.descriptions[6].runningDesc
 }
 
-func (m *OspfMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric) {
-	m.genericExporter.Export(p, ch)
-	ch <- prometheus.MustNewConstMetric(descriptions[p.IpVersion].runningDesc, prometheus.GaugeValue, p.Attributes["running"], p.Name)
+func (m *ospfMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric) {
+	ch <- prometheus.MustNewConstMetric(m.descriptions[p.IpVersion].runningDesc, prometheus.GaugeValue, p.Attributes["running"], p.Name)
 }

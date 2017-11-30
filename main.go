@@ -21,6 +21,7 @@ var (
 	bird6Socket   = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon")
 	birdEnabled   = flag.Bool("bird.ipv4", true, "Get protocols from bird")
 	bird6Enabled  = flag.Bool("bird.ipv6", true, "Get protocols from bird6")
+	newFormat     = flag.Bool("use-new-format", false, "New metric format (more convinient / generic)")
 )
 
 func init() {
@@ -87,7 +88,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) error {
 
 	if len(protocols) > 0 {
 		reg := prometheus.NewRegistry()
-		c := NewMetricCollectorForProtocols(protocols)
+		c := NewMetricCollectorForProtocols(protocols, *newFormat)
 		reg.MustRegister(c)
 
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{

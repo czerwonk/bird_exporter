@@ -7,40 +7,66 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-type MetricExporter interface {
-	Describe(ch chan<- *prometheus.Desc)
-	Export(p *protocol.Protocol, ch chan<- prometheus.Metric)
-}
-
 type MetricCollector struct {
 	protocols []*protocol.Protocol
-	exporters map[int]MetricExporter
+	exporters map[int][]metrics.MetricExporter
 }
 
-func NewMetricCollectorForProtocols(protocols []*protocol.Protocol) *MetricCollector {
-	l := &metrics.LegacyLabelStrategy{}
-	e := map[int]MetricExporter{
-		protocol.BGP:    metrics.NewMetricExporter("bgp4_session", "bgp6_session", l),
-		protocol.Device: metrics.NewMetricExporter("device4", "device6", l),
-		protocol.Direct: metrics.NewMetricExporter("direct4", "direct6", l),
-		protocol.Kernel: metrics.NewMetricExporter("kernel4", "kernel6", l),
-		protocol.OSPF:   ospf.NewExporter(l),
-		protocol.Static: metrics.NewMetricExporter("static4", "static6", l),
+func NewMetricCollectorForProtocols(protocols []*protocol.Protocol, newFormat bool) *MetricCollector {
+	var e map[int][]metrics.MetricExporter
+
+	if newFormat {
+		e = exportersForDefault()
+	} else {
+		e = exportersForLegacy()
 	}
 
 	return &MetricCollector{protocols: protocols, exporters: e}
 }
 
+func exportersForLegacy() map[int][]metrics.MetricExporter {
+	l := &metrics.LegacyLabelStrategy{}
+
+	return map[int][]metrics.MetricExporter{
+		protocol.BGP:    []metrics.MetricExporter{metrics.NewMetricExporter("bgp4_session", "bgp6_session", l)},
+		protocol.Device: []metrics.MetricExporter{metrics.NewMetricExporter("device4", "device6", l)},
+		protocol.Direct: []metrics.MetricExporter{metrics.NewMetricExporter("direct4", "direct6", l)},
+		protocol.Kernel: []metrics.MetricExporter{metrics.NewMetricExporter("kernel4", "kernel6", l)},
+		protocol.OSPF:   []metrics.MetricExporter{metrics.NewMetricExporter("ospf", "ospfv3", l), ospf.NewExporter("")},
+		protocol.Static: []metrics.MetricExporter{metrics.NewMetricExporter("static4", "static6", l)},
+	}
+}
+
+func exportersForDefault() map[int][]metrics.MetricExporter {
+	l := &metrics.DefaultLabelStrategy{}
+	e := metrics.NewGenericProtocolMetricExporter("bird_protocol", l)
+
+	return map[int][]metrics.MetricExporter{
+		protocol.BGP:    []metrics.MetricExporter{e},
+		protocol.Device: []metrics.MetricExporter{e},
+		protocol.Direct: []metrics.MetricExporter{e},
+		protocol.Kernel: []metrics.MetricExporter{e},
+		protocol.OSPF:   []metrics.MetricExporter{e, ospf.NewExporter("bird_")},
+		protocol.Static: []metrics.MetricExporter{e},
+	}
+}
+
 func (m *MetricCollector) Describe(ch chan<- *prometheus.Desc) {
 	for _, v := range m.exporters {
-		v.Describe(ch)
+		for _, e := range v {
+			e.Describe(ch)
+		}
 	}
 }
 
 func (m *MetricCollector) Collect(ch chan<- prometheus.Metric) {
 	for _, p := range m.protocols {
-		if p.Proto != protocol.PROTO_UNKNOWN {
-			m.exporters[p.Proto].Export(p, ch)
+		if p.Proto == protocol.PROTO_UNKNOWN {
+			continue
+		}
+
+		for _, e := range m.exporters[p.Proto] {
+			e.Export(p, ch)
 		}
 	}
 }

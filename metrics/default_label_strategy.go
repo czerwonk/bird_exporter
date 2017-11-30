@@ -1,6 +1,9 @@
 package metrics
 
-import "github.com/czerwonk/bird_exporter/protocol"
+import (
+	"github.com/czerwonk/bird_exporter/protocol"
+	"strconv"
+)
 
 type DefaultLabelStrategy struct {
 }
@@ -10,7 +13,7 @@ func (*DefaultLabelStrategy) labelNames() []string {
 }
 
 func (*DefaultLabelStrategy) labelValues(p *protocol.Protocol) []string {
-	return []string{p.Name, protoString(p), string(p.IpVersion)}
+	return []string{p.Name, protoString(p), strconv.Itoa(p.IpVersion)}
 }
 func protoString(p *protocol.Protocol) string {
 	switch p.Proto {
