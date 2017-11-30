@@ -1,13 +1,8 @@
 package main
 
 import (
-	"github.com/czerwonk/bird_exporter/bgp"
-	"github.com/czerwonk/bird_exporter/device"
-	"github.com/czerwonk/bird_exporter/direct"
-	"github.com/czerwonk/bird_exporter/kernel"
 	"github.com/czerwonk/bird_exporter/ospf"
 	"github.com/czerwonk/bird_exporter/protocol"
-	"github.com/czerwonk/bird_exporter/static"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -23,12 +18,12 @@ type MetricCollector struct {
 
 func NewMetricCollectorForProtocols(protocols []*protocol.Protocol) *MetricCollector {
 	e := map[int]MetricExporter{
-		protocol.BGP:    &bgp.BgpMetricExporter{},
-		protocol.Device: &device.DeviceMetricExporter{},
-		protocol.Direct: &direct.DirectMetricExporter{},
-		protocol.Kernel: &kernel.KernelMetricExporter{},
+		protocol.BGP:    protocol.NewMetricExporter("bgp4_session", "bgp6_session"),
+		protocol.Device: protocol.NewMetricExporter("device4", "device6"),
+		protocol.Direct: protocol.NewMetricExporter("direct4", "direct6"),
+		protocol.Kernel: protocol.NewMetricExporter("kernel4", "kernel6"),
 		protocol.OSPF:   &ospf.OspfMetricExporter{},
-		protocol.Static: &static.StaticMetricExporter{},
+		protocol.Static: protocol.NewMetricExporter("static4", "static6"),
 	}
 
 	return &MetricCollector{protocols: protocols, exporters: e}
