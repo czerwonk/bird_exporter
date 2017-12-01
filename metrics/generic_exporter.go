@@ -35,20 +35,29 @@ type GenericProtocolMetricExporter struct {
 	withdrawsExportAcceptCountDesc  *prometheus.Desc
 }
 
-func NewGenericProtocolMetricExporter(prefix string, labelStrategy LabelStrategy) *GenericProtocolMetricExporter {
+func NewGenericProtocolMetricExporter(prefix string, newNaming bool, labelStrategy LabelStrategy) *GenericProtocolMetricExporter {
 	m := &GenericProtocolMetricExporter{labelStrategy: labelStrategy}
-	m.initDesc(prefix)
+	m.initDesc(prefix, newNaming)
 
 	return m
 }
 
-func (m *GenericProtocolMetricExporter) initDesc(prefix string) {
+func (m *GenericProtocolMetricExporter) initDesc(prefix string, newNaming bool) {
 	labels := m.labelStrategy.labelNames()
 	m.upDesc = prometheus.NewDesc(prefix+"_up", "Protocol is up", labels, nil)
-	m.importCountDesc = prometheus.NewDesc(prefix+"_prefix_count_import", "Number of imported routes", labels, nil)
-	m.exportCountDesc = prometheus.NewDesc(prefix+"_prefix_count_export", "Number of exported routes", labels, nil)
-	m.filterCountDesc = prometheus.NewDesc(prefix+"_prefix_count_filter", "Number of filtered routes", labels, nil)
-	m.preferredCountDesc = prometheus.NewDesc(prefix+"_prefix_count_preferred", "Number of preferred routes", labels, nil)
+
+	if newNaming {
+		m.importCountDesc = prometheus.NewDesc(prefix+"_prefix_import_count", "Number of imported routes", labels, nil)
+		m.exportCountDesc = prometheus.NewDesc(prefix+"_prefix_export_count", "Number of exported routes", labels, nil)
+		m.filterCountDesc = prometheus.NewDesc(prefix+"_prefix_filter_count", "Number of filtered routes", labels, nil)
+		m.preferredCountDesc = prometheus.NewDesc(prefix+"_prefix_preferred_count", "Number of preferred routes", labels, nil)
+	} else {
+		m.importCountDesc = prometheus.NewDesc(prefix+"_prefix_count_import", "Number of imported routes", labels, nil)
+		m.exportCountDesc = prometheus.NewDesc(prefix+"_prefix_count_export", "Number of exported routes", labels, nil)
+		m.filterCountDesc = prometheus.NewDesc(prefix+"_prefix_count_filter", "Number of filtered routes", labels, nil)
+		m.preferredCountDesc = prometheus.NewDesc(prefix+"_prefix_count_preferred", "Number of preferred routes", labels, nil)
+	}
+
 	m.uptimeDesc = prometheus.NewDesc(prefix+"_uptime", "Uptime of the protocol in seconds", labels, nil)
 	m.updatesImportIgnoreCountDesc = prometheus.NewDesc(prefix+"_changes_update_import_ignore_count", "Number of incoming updates beeing ignored", labels, nil)
 	m.updatesImportAcceptCountDesc = prometheus.NewDesc(prefix+"_changes_update_import_accept_count", "Number of incoming updates beeing accepted", labels, nil)

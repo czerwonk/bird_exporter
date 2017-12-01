@@ -40,7 +40,7 @@ func exportersForLegacy() map[int][]metrics.MetricExporter {
 
 func exportersForDefault() map[int][]metrics.MetricExporter {
 	l := &metrics.DefaultLabelStrategy{}
-	e := metrics.NewGenericProtocolMetricExporter("bird_protocol", l)
+	e := metrics.NewGenericProtocolMetricExporter("bird_protocol", true, l)
 
 	return map[int][]metrics.MetricExporter{
 		protocol.BGP:    []metrics.MetricExporter{e},

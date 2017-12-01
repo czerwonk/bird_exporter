@@ -12,8 +12,8 @@ type ProtocolMetricExporter struct {
 
 func NewMetricExporter(prefixIpv4, prefixIpv6 string, labelStrategy LabelStrategy) *ProtocolMetricExporter {
 	return &ProtocolMetricExporter{
-		ipv4Exporter: NewGenericProtocolMetricExporter(prefixIpv4, labelStrategy),
-		ipv6Exporter: NewGenericProtocolMetricExporter(prefixIpv6, labelStrategy),
+		ipv4Exporter: NewGenericProtocolMetricExporter(prefixIpv4, false, labelStrategy),
+		ipv6Exporter: NewGenericProtocolMetricExporter(prefixIpv6, false, labelStrategy),
 	}
 }
 

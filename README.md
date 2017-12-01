@@ -30,8 +30,8 @@ ospfv3_running{name="ospf1"} 1
 
 ### new format
 ```
-bird_protocol_prefix_count_import{name="bgp1",proto="BGP",ip_version="4"} 600000
-bird_protocol_prefix_count_import{name="bgp1",proto="BGP",ip_version="6"} 50000
+bird_protocol_prefix_import_count{name="bgp1",proto="BGP",ip_version="4"} 600000
+bird_protocol_prefix_import_count{name="bgp1",proto="BGP",ip_version="6"} 50000
 bird_ospfv3_running{name="ospf1"} 1
 ```
 
