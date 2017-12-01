@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
-	"github.com/czerwonk/bird_exporter/protocol"
 )
 
 const version string = "1.0.0"
@@ -23,12 +23,12 @@ var (
 	birdEnabled   = flag.Bool("bird.ipv4", true, "Get protocols from bird")
 	bird6Enabled  = flag.Bool("bird.ipv6", true, "Get protocols from bird6")
 	newFormat     = flag.Bool("format.new", false, "New metric format (more convinient / generic)")
-	enableBgp = flag.Bool("proto.bgp", true, "Enables metrics for protocol BGP")
-	enableOspf = flag.Bool("proto.ospf", true, "Enables metrics for protocol OSPF")
-	enableKernel = flag.Bool("proto.kernel", true, "Enables metrics for protocol kernel")
-	enableStatic = flag.Bool("proto.static", true, "Enables metrics for protocol static")
-	enableDevice = flag.Bool("proto.device", true, "Enables metrics for protocol static")
-	enableDirect = flag.Bool("proto.direct", true, "Enables metrics for protocol direct")
+	enableBgp     = flag.Bool("proto.bgp", true, "Enables metrics for protocol BGP")
+	enableOspf    = flag.Bool("proto.ospf", true, "Enables metrics for protocol OSPF")
+	enableKernel  = flag.Bool("proto.kernel", true, "Enables metrics for protocol kernel")
+	enableStatic  = flag.Bool("proto.static", true, "Enables metrics for protocol static")
+	enableDevice  = flag.Bool("proto.device", true, "Enables metrics for protocol static")
+	enableDirect  = flag.Bool("proto.direct", true, "Enables metrics for protocol direct")
 )
 
 func init() {
