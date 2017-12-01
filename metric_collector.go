@@ -29,12 +29,12 @@ func exportersForLegacy() map[int][]metrics.MetricExporter {
 	l := &metrics.LegacyLabelStrategy{}
 
 	return map[int][]metrics.MetricExporter{
-		protocol.BGP:    []metrics.MetricExporter{metrics.NewMetricExporter("bgp4_session", "bgp6_session", l)},
-		protocol.Device: []metrics.MetricExporter{metrics.NewMetricExporter("device4", "device6", l)},
-		protocol.Direct: []metrics.MetricExporter{metrics.NewMetricExporter("direct4", "direct6", l)},
-		protocol.Kernel: []metrics.MetricExporter{metrics.NewMetricExporter("kernel4", "kernel6", l)},
-		protocol.OSPF:   []metrics.MetricExporter{metrics.NewMetricExporter("ospf", "ospfv3", l), ospf.NewExporter("")},
-		protocol.Static: []metrics.MetricExporter{metrics.NewMetricExporter("static4", "static6", l)},
+		protocol.BGP:    []metrics.MetricExporter{metrics.NewLegacyMetricExporter("bgp4_session", "bgp6_session", l)},
+		protocol.Device: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("device4", "device6", l)},
+		protocol.Direct: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("direct4", "direct6", l)},
+		protocol.Kernel: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("kernel4", "kernel6", l)},
+		protocol.OSPF:   []metrics.MetricExporter{metrics.NewLegacyMetricExporter("ospf", "ospfv3", l), ospf.NewExporter("")},
+		protocol.Static: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("static4", "static6", l)},
 	}
 }
 
