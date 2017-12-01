@@ -16,7 +16,8 @@ timeformat protocol "%s";
 ## Metric formats
 In version 1.0 a new metric format was introduced. 
 To prevent a breaking change the new format is optional and can be enabled by using the ```-format.new``` flag.
-The new format handles protocols more generic and allows a better query structure. 
+The new format handles protocols more generic and allows a better query structure.
+Also it adheres more to the metric naming best practices.
 In both formats protocol specific metrics are prefixed with the protocol name (e.g. OSPF running metric).
 
 This is a short example of the different formats:
