@@ -8,11 +8,12 @@ import (
 )
 
 type MetricCollector struct {
-	protocols []*protocol.Protocol
-	exporters map[int][]metrics.MetricExporter
+	protocols        []*protocol.Protocol
+	exporters        map[int][]metrics.MetricExporter
+	enabledProtocols int
 }
 
-func NewMetricCollectorForProtocols(protocols []*protocol.Protocol, newFormat bool) *MetricCollector {
+func NewMetricCollectorForProtocols(protocols []*protocol.Protocol, newFormat bool, enabledProtocols int) *MetricCollector {
 	var e map[int][]metrics.MetricExporter
 
 	if newFormat {
@@ -21,7 +22,7 @@ func NewMetricCollectorForProtocols(protocols []*protocol.Protocol, newFormat bo
 		e = exportersForLegacy()
 	}
 
-	return &MetricCollector{protocols: protocols, exporters: e}
+	return &MetricCollector{protocols: protocols, exporters: e, enabledProtocols: enabledProtocols}
 }
 
 func exportersForLegacy() map[int][]metrics.MetricExporter {
@@ -61,7 +62,7 @@ func (m *MetricCollector) Describe(ch chan<- *prometheus.Desc) {
 
 func (m *MetricCollector) Collect(ch chan<- prometheus.Metric) {
 	for _, p := range m.protocols {
-		if p.Proto == protocol.PROTO_UNKNOWN {
+		if p.Proto == protocol.PROTO_UNKNOWN || (m.enabledProtocols & p.Proto != p.Proto) {
 			continue
 		}
 
