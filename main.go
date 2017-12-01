@@ -59,6 +59,11 @@ func printVersion() {
 
 func startServer() {
 	log.Infof("Starting bird exporter (Version: %s)\n", version)
+
+	if !*newFormat {
+		log.Info("INFO: You are using the old metric format. Please consider using the new (more convinient one) by setting -format.new=true.")
+	}
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>Bird Routing Daemon Exporter (Version ` + version + `)</title></head>
