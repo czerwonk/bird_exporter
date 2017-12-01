@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/czerwonk/bird_socket"
+	"github.com/czerwonk/bird_exporter/parser"
 )
 
 func getProtocols() ([]*protocol.Protocol, error) {
@@ -33,5 +34,5 @@ func getProtocolsFromBird(socketPath string, ipVersion int) ([]*protocol.Protoco
 		return nil, err
 	}
 
-	return parseOutput(b, ipVersion), nil
+	return parser.Parse(b, ipVersion), nil
 }

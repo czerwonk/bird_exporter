@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.9.0"
+const version string = "1.0.0"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -21,6 +22,13 @@ var (
 	bird6Socket   = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon")
 	birdEnabled   = flag.Bool("bird.ipv4", true, "Get protocols from bird")
 	bird6Enabled  = flag.Bool("bird.ipv6", true, "Get protocols from bird6")
+	newFormat     = flag.Bool("format.new", false, "New metric format (more convinient / generic)")
+	enableBgp     = flag.Bool("proto.bgp", true, "Enables metrics for protocol BGP")
+	enableOspf    = flag.Bool("proto.ospf", true, "Enables metrics for protocol OSPF")
+	enableKernel  = flag.Bool("proto.kernel", true, "Enables metrics for protocol Kernel")
+	enableStatic  = flag.Bool("proto.static", true, "Enables metrics for protocol Static")
+	enableDevice  = flag.Bool("proto.device", true, "Enables metrics for protocol Device")
+	enableDirect  = flag.Bool("proto.direct", true, "Enables metrics for protocol Direct")
 )
 
 func init() {
@@ -51,6 +59,11 @@ func printVersion() {
 
 func startServer() {
 	log.Infof("Starting bird exporter (Version: %s)\n", version)
+
+	if !*newFormat {
+		log.Info("INFO: You are using the old metric format. Please consider using the new (more convinient one) by setting -format.new=true.")
+	}
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>Bird Routing Daemon Exporter (Version ` + version + `)</title></head>
@@ -87,7 +100,8 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) error {
 
 	if len(protocols) > 0 {
 		reg := prometheus.NewRegistry()
-		c := NewMetricCollectorForProtocols(protocols)
+		p := enabledProtocols()
+		c := NewMetricCollectorForProtocols(protocols, *newFormat, p)
 		reg.MustRegister(c)
 
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{
@@ -96,4 +110,28 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return nil
+}
+func enabledProtocols() int {
+	res := 0
+
+	if *enableBgp {
+		res |= protocol.BGP
+	}
+	if *enableOspf {
+		res |= protocol.OSPF
+	}
+	if *enableKernel {
+		res |= protocol.Kernel
+	}
+	if *enableStatic {
+		res |= protocol.Static
+	}
+	if *enableDevice {
+		res |= protocol.Device
+	}
+	if *enableDirect {
+		res |= protocol.Direct
+	}
+
+	return res
 }

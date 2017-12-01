@@ -13,6 +13,28 @@ To get meaningful uptime information bird has to be configured this way:
 timeformat protocol "%s";
 ```
 
+## Metric formats
+In version 1.0 a new metric format was added. 
+To prevent a breaking change the new format is optional and can be enabled by using the ```-format.new``` flag.
+The new format handles protocols more generic and allows a better query structure. 
+In both formats protocol specific metrics are prefixed with the protocol name (e.g. OSPF running metric).
+
+This is a short example of the different formats:
+
+### old format
+```
+bgp4_session_prefix_count_import{name="bgp1"} 600000
+bgp6_session_prefix_count_import{name="bgp1"} 50000
+ospfv3_running{name="ospf1"} 1
+```
+
+### new format
+```
+bird_protocol_prefix_import_count{name="bgp1",proto="BGP",ip_version="4"} 600000
+bird_protocol_prefix_import_count{name="bgp1",proto="BGP",ip_version="6"} 50000
+bird_ospfv3_running{name="ospf1"} 1
+```
+
 ### Default Port
 In version 0.7.1 the default port changed to 9324 since port 9200 is the default port of elasticsearch. The new port is now registered in the default port allocation list (https://github.com/prometheus/prometheus/wiki/Default-port-allocations)
 
@@ -22,6 +44,11 @@ In version 0.8 communication to bird changed to sockets. The default socket path
 ## Install
 ```
 go get -u github.com/czerwonk/bird_exporter
+```
+
+## Usage
+```
+bird_exporter -format.new=true
 ```
 
 ## Features
