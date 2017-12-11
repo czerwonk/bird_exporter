@@ -13,6 +13,9 @@ To get meaningful uptime information bird has to be configured this way:
 timeformat protocol "%s";
 ```
 
+## Important information for users of bird 2.0
+Version 2.0 of bird was released on 2017-12-11. Since this version introcuces a new handling of IPv4 and IPv6 protocols (channels) bird_export does not support this version yet. There will be a version 1.1 in the next days which will introduce support for the new channel feature.
+
 ## Metric formats
 In version 1.0 a new metric format was introduced. 
 To prevent a breaking change the new format is optional and can be enabled by using the ```-format.new``` flag.
