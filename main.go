@@ -12,16 +12,14 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "1.0.0"
+const version string = "1.1.0"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
 	listenAddress = flag.String("web.listen-address", ":9324", "Address on which to expose metrics and web interface.")
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	birdSocket    = flag.String("bird.socket", "/var/run/bird.ctl", "Socket to communicate with bird routing daemon")
-	bird6Socket   = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon")
-	birdEnabled   = flag.Bool("bird.ipv4", true, "Get protocols from bird")
-	bird6Enabled  = flag.Bool("bird.ipv6", true, "Get protocols from bird6")
+	birdV2        = flag.Bool("bird.v2", false, "Bird major version >= 2.0 (multi channel protocols)")
 	newFormat     = flag.Bool("format.new", false, "New metric format (more convinient / generic)")
 	enableBgp     = flag.Bool("proto.bgp", true, "Enables metrics for protocol BGP")
 	enableOspf    = flag.Bool("proto.ospf", true, "Enables metrics for protocol OSPF")
@@ -29,6 +27,10 @@ var (
 	enableStatic  = flag.Bool("proto.static", true, "Enables metrics for protocol Static")
 	enableDevice  = flag.Bool("proto.device", true, "Enables metrics for protocol Device")
 	enableDirect  = flag.Bool("proto.direct", true, "Enables metrics for protocol Direct")
+	// pre bird 2.0
+	bird6Socket   = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon (not compatible with -bird.v2)")
+	birdEnabled   = flag.Bool("bird.ipv4", true, "Get protocols from bird (not compatible with -bird.v2)")
+	bird6Enabled  = flag.Bool("bird.ipv6", true, "Get protocols from bird6 (not compatible with -bird.v2)")
 )
 
 func init() {

@@ -3,9 +3,9 @@ package main
 import (
 	"testing"
 
+	"github.com/czerwonk/bird_exporter/parser"
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/czerwonk/testutils/assert"
-	"github.com/czerwonk/bird_exporter/parser"
 )
 
 func TestEstablishedBgpOldTimeFormat(t *testing.T) {
@@ -102,6 +102,92 @@ func TestUpdateAndWithdrawCounts(t *testing.T) {
 	assert.Int64Equal("export withdraws filtered", 18, x.ExportWithdraws.Filtered, t)
 	assert.Int64Equal("export withdraws ignored", 19, x.ExportWithdraws.Ignored, t)
 	assert.Int64Equal("export withdraws accepted", 0, x.ExportWithdraws.Accepted, t)
+}
+
+func TestWithBird2(t *testing.T) {
+	data := "Name       Proto      Table      State  Since         Info\n" +
+		"direct1    Direct     ---        up     1513027903\n" +
+		"  Channel ipv4\n" +
+		"    State:          UP\n" +
+		"    Table:          master4\n" +
+		"    Preference:     240\n" +
+		"    Input filter:   ACCEPT\n" +
+		"    Output filter:  REJECT\n" +
+		"    Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\n" +
+		"    Route change stats:     received   rejected   filtered    ignored   accepted\n" +
+		"      Import updates:              1          2          3          4          5\n" +
+		"      Import withdraws:            6          7          8          9         10\n" +
+		"      Export updates:             11         12         13         14         15\n" +
+		"      Export withdraws:           16         17         18         19        ---\n" +
+		"  Channel ipv6\n" +
+		"    State:          UP\n" +
+		"    Table:          master6\n" +
+		"    Preference:     240\n" +
+		"    Input filter:   ACCEPT\n" +
+		"    Output filter:  REJECT\n" +
+		"    Routes:         3 imported, 7 filtered, 5 exported, 13 preferred\n" +
+		"    Route change stats:     received   rejected   filtered    ignored   accepted\n" +
+		"      Import updates:             20         21         22         23         24\n" +
+		"      Import withdraws:           25         26         27         28         29\n" +
+		"      Export updates:             30         31         32         33         34\n" +
+		"      Export withdraws:           35         36         37         38        ---\n"
+
+	p := parser.Parse([]byte(data), 0)
+	assert.IntEqual("protocols", 2, len(p), t)
+
+	x := p[0]
+	assert.IntEqual("ipv4 ip version", 4, x.IpVersion, t)
+	assert.Int64Equal("ipv4 imported", 12, x.Imported, t)
+	assert.Int64Equal("ipv4 exported", 34, x.Exported, t)
+	assert.Int64Equal("ipv4 filtered", 1, x.Filtered, t)
+	assert.Int64Equal("ipv4 preferred", 100, x.Preferred, t)
+	assert.Int64Equal("ipv4 import updates received", 1, x.ImportUpdates.Received, t)
+	assert.Int64Equal("ipv4 import updates rejected", 2, x.ImportUpdates.Rejected, t)
+	assert.Int64Equal("ipv4 import updates filtered", 3, x.ImportUpdates.Filtered, t)
+	assert.Int64Equal("ipv4 import updates ignored", 4, x.ImportUpdates.Ignored, t)
+	assert.Int64Equal("ipv4 import updates accepted", 5, x.ImportUpdates.Accepted, t)
+	assert.Int64Equal("ipv4 import withdraws received", 6, x.ImportWithdraws.Received, t)
+	assert.Int64Equal("ipv4 import withdraws rejected", 7, x.ImportWithdraws.Rejected, t)
+	assert.Int64Equal("ipv4 import withdraws filtered", 8, x.ImportWithdraws.Filtered, t)
+	assert.Int64Equal("ipv4 import withdraws ignored", 9, x.ImportWithdraws.Ignored, t)
+	assert.Int64Equal("ipv4 import withdraws accepted", 10, x.ImportWithdraws.Accepted, t)
+	assert.Int64Equal("ipv4 export updates received", 11, x.ExportUpdates.Received, t)
+	assert.Int64Equal("ipv4 export updates rejected", 12, x.ExportUpdates.Rejected, t)
+	assert.Int64Equal("ipv4 export updates filtered", 13, x.ExportUpdates.Filtered, t)
+	assert.Int64Equal("ipv4 export updates ignored", 14, x.ExportUpdates.Ignored, t)
+	assert.Int64Equal("ipv4 export updates accepted", 15, x.ExportUpdates.Accepted, t)
+	assert.Int64Equal("ipv4 export withdraws received", 16, x.ExportWithdraws.Received, t)
+	assert.Int64Equal("ipv4 export withdraws rejected", 17, x.ExportWithdraws.Rejected, t)
+	assert.Int64Equal("ipv4 export withdraws filtered", 18, x.ExportWithdraws.Filtered, t)
+	assert.Int64Equal("ipv4 export withdraws ignored", 19, x.ExportWithdraws.Ignored, t)
+	assert.Int64Equal("ipv4 export withdraws accepted", 0, x.ExportWithdraws.Accepted, t)
+
+	x = p[1]
+	assert.IntEqual("ipv6 ip version", 6, x.IpVersion, t)
+	assert.Int64Equal("ipv6 imported", 3, x.Imported, t)
+	assert.Int64Equal("ipv6 exported", 5, x.Exported, t)
+	assert.Int64Equal("ipv6 filtered", 7, x.Filtered, t)
+	assert.Int64Equal("ipv6 preferred", 13, x.Preferred, t)
+	assert.Int64Equal("ipv6 import updates received", 20, x.ImportUpdates.Received, t)
+	assert.Int64Equal("ipv6 import updates rejected", 21, x.ImportUpdates.Rejected, t)
+	assert.Int64Equal("ipv6 import updates filtered", 22, x.ImportUpdates.Filtered, t)
+	assert.Int64Equal("ipv6 import updates ignored", 23, x.ImportUpdates.Ignored, t)
+	assert.Int64Equal("ipv6 import updates accepted", 24, x.ImportUpdates.Accepted, t)
+	assert.Int64Equal("ipv6 import withdraws received", 25, x.ImportWithdraws.Received, t)
+	assert.Int64Equal("ipv6 import withdraws rejected", 26, x.ImportWithdraws.Rejected, t)
+	assert.Int64Equal("ipv6 import withdraws filtered", 27, x.ImportWithdraws.Filtered, t)
+	assert.Int64Equal("ipv6 import withdraws ignored", 28, x.ImportWithdraws.Ignored, t)
+	assert.Int64Equal("ipv6 import withdraws accepted", 29, x.ImportWithdraws.Accepted, t)
+	assert.Int64Equal("ipv6 export updates received", 30, x.ExportUpdates.Received, t)
+	assert.Int64Equal("ipv6 export updates rejected", 31, x.ExportUpdates.Rejected, t)
+	assert.Int64Equal("ipv6 export updates filtered", 32, x.ExportUpdates.Filtered, t)
+	assert.Int64Equal("ipv6 export updates ignored", 33, x.ExportUpdates.Ignored, t)
+	assert.Int64Equal("ipv6 export updates accepted", 34, x.ExportUpdates.Accepted, t)
+	assert.Int64Equal("ipv6 export withdraws received", 35, x.ExportWithdraws.Received, t)
+	assert.Int64Equal("ipv6 export withdraws rejected", 36, x.ExportWithdraws.Rejected, t)
+	assert.Int64Equal("ipv6 export withdraws filtered", 37, x.ExportWithdraws.Filtered, t)
+	assert.Int64Equal("ipv6 export withdraws ignored", 38, x.ExportWithdraws.Ignored, t)
+	assert.Int64Equal("ipv6 export withdraws accepted", 0, x.ExportWithdraws.Accepted, t)
 }
 
 func TestOspfOldTimeFormat(t *testing.T) {

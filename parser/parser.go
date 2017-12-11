@@ -14,10 +14,11 @@ import (
 )
 
 var (
-	protocolRegex *regexp.Regexp
-	routeRegex    *regexp.Regexp
-	uptimeRegex   *regexp.Regexp
+	protocolRegex    *regexp.Regexp
+	routeRegex       *regexp.Regexp
+	uptimeRegex      *regexp.Regexp
 	routeChangeRegex *regexp.Regexp
+	channelRegex     *regexp.Regexp
 )
 
 func init() {
@@ -25,6 +26,7 @@ func init() {
 	routeRegex = regexp.MustCompile("^\\s+Routes:\\s+(\\d+) imported, (?:(\\d+) filtered, )?(\\d+) exported(?:, (\\d+) preferred)?")
 	uptimeRegex = regexp.MustCompile("^(?:((\\d+):(\\d{2}):(\\d{2}))|\\d+)$")
 	routeChangeRegex = regexp.MustCompile("(Import|Export) (updates|withdraws):\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s*")
+	channelRegex = regexp.MustCompile("Channel ipv(4|6)")
 }
 
 // Parser parses bird output and returns protocol.Protocol structs

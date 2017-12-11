@@ -7,6 +7,19 @@ import (
 )
 
 func getProtocols() ([]*protocol.Protocol, error) {
+	var protocols []*protocol.Protocol = nil
+	var err error = nil
+
+	if *birdV2 {
+		protocols, err = getProtocolsFromBird(*birdSocket, 0)
+	} else {
+		protocols, err = getProtocolsFromBird1()
+	}
+
+	return protocols, err
+}
+
+func getProtocolsFromBird1() ([]*protocol.Protocol, error) {
 	protocols := make([]*protocol.Protocol, 0)
 
 	if *birdEnabled {
