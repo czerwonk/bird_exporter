@@ -13,8 +13,12 @@ To get meaningful uptime information bird has to be configured this way:
 timeformat protocol "%s";
 ```
 
-## Important information for users of bird 2.0
-Version 2.0 of bird was released on 2017-12-11. Since this version introcuces a new handling of IPv4 and IPv6 protocols (channels) bird_export does not support this version yet. There will be a version 1.1 in the next days which will introduce support for the new channel feature.
+## Important information for users of bird 2.0+
+Version 2.0 of bird routing daemon does support IPv4 and IPv6 in one single daemon now. 
+For further information see [here](https://gitlab.labs.nic.cz/labs/bird/wikis/transition-notes-to-bird-2). 
+Since version 1.1 bird_exporter can be used with bird 2.0+ using the `-bird.v2` parameter. 
+When using this parameter bird_exporter queries the same bird socket for IPv4 and IPv6. 
+In this mode the IP protocol is determined by the channel information and parameters `-bird.ipv4`, `-bird.ipv6` and `-bird.socket6` are ignored.
 
 ## Metric formats
 In version 1.0 a new metric format was introduced. 

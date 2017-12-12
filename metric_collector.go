@@ -30,7 +30,6 @@ func exportersForLegacy() map[int][]metrics.MetricExporter {
 
 	return map[int][]metrics.MetricExporter{
 		protocol.BGP:    []metrics.MetricExporter{metrics.NewLegacyMetricExporter("bgp4_session", "bgp6_session", l)},
-		protocol.Device: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("device4", "device6", l)},
 		protocol.Direct: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("direct4", "direct6", l)},
 		protocol.Kernel: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("kernel4", "kernel6", l)},
 		protocol.OSPF:   []metrics.MetricExporter{metrics.NewLegacyMetricExporter("ospf", "ospfv3", l), ospf.NewExporter("")},
@@ -44,7 +43,6 @@ func exportersForDefault() map[int][]metrics.MetricExporter {
 
 	return map[int][]metrics.MetricExporter{
 		protocol.BGP:    []metrics.MetricExporter{e},
-		protocol.Device: []metrics.MetricExporter{e},
 		protocol.Direct: []metrics.MetricExporter{e},
 		protocol.Kernel: []metrics.MetricExporter{e},
 		protocol.OSPF:   []metrics.MetricExporter{e, ospf.NewExporter("bird_")},
