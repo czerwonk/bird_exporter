@@ -28,8 +28,6 @@ func protoString(p *protocol.Protocol) string {
 		return "Static"
 	case protocol.Kernel:
 		return "Kernel"
-	case protocol.Device:
-		return "Device"
 	case protocol.Direct:
 		return "Direct"
 	}

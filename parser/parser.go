@@ -102,8 +102,6 @@ func parseProto(val string) int {
 		return protocol.OSPF
 	case "Direct":
 		return protocol.Direct
-	case "Device":
-		return protocol.Device
 	case "Kernel":
 		return protocol.Kernel
 	case "Static":

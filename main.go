@@ -25,7 +25,6 @@ var (
 	enableOspf    = flag.Bool("proto.ospf", true, "Enables metrics for protocol OSPF")
 	enableKernel  = flag.Bool("proto.kernel", true, "Enables metrics for protocol Kernel")
 	enableStatic  = flag.Bool("proto.static", true, "Enables metrics for protocol Static")
-	enableDevice  = flag.Bool("proto.device", true, "Enables metrics for protocol Device")
 	enableDirect  = flag.Bool("proto.direct", true, "Enables metrics for protocol Direct")
 	// pre bird 2.0
 	bird6Socket   = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon (not compatible with -bird.v2)")
@@ -127,9 +126,6 @@ func enabledProtocols() int {
 	}
 	if *enableStatic {
 		res |= protocol.Static
-	}
-	if *enableDevice {
-		res |= protocol.Device
 	}
 	if *enableDirect {
 		res |= protocol.Direct

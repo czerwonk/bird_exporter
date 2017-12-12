@@ -7,7 +7,6 @@ const (
 	Kernel        = 4
 	Static        = 8
 	Direct        = 16
-	Device        = 32
 )
 
 type Protocol struct {
