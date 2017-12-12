@@ -13,7 +13,7 @@ To get meaningful uptime information bird has to be configured this way:
 timeformat protocol "%s";
 ```
 
-## Important information for users of bird 2.0
+## Important information for users of bird 2.0+
 Version 2.0 of bird routing daemon does support IPv4 and IPv6 in one single daemon now. 
 For further information see [here](https://gitlab.labs.nic.cz/labs/bird/wikis/transition-notes-to-bird-2). 
 Since version 1.1 bird_exporter can be used with bird 2.0+ using the `-bird.v2` parameter. 
