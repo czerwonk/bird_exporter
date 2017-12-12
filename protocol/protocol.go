@@ -12,7 +12,7 @@ const (
 
 type Protocol struct {
 	Name            string
-	IpVersion       int
+	IpVersion       string
 	Proto           int
 	Up              int
 	Imported        int64
@@ -35,6 +35,6 @@ type RouteChangeCount struct {
 	Accepted int64
 }
 
-func NewProtocol(name string, proto, ipVersion, uptime int) *Protocol {
+func NewProtocol(name string, proto int, ipVersion string, uptime int) *Protocol {
 	return &Protocol{Name: name, Proto: proto, IpVersion: ipVersion, Uptime: uptime, Attributes: make(map[string]float64)}
 }

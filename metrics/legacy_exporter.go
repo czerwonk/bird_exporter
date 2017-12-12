@@ -1,8 +1,8 @@
 package metrics
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/czerwonk/bird_exporter/protocol"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type LegacyMetricExporter struct {
@@ -11,7 +11,7 @@ type LegacyMetricExporter struct {
 }
 
 func NewLegacyMetricExporter(prefixIpv4, prefixIpv6 string, labelStrategy LabelStrategy) MetricExporter {
-	return &LegacyMetricExporter {
+	return &LegacyMetricExporter{
 		ipv4Exporter: NewGenericProtocolMetricExporter(prefixIpv4, false, labelStrategy),
 		ipv6Exporter: NewGenericProtocolMetricExporter(prefixIpv6, false, labelStrategy),
 	}
@@ -23,7 +23,7 @@ func (e *LegacyMetricExporter) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (e *LegacyMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric) {
-	if p.IpVersion == 4 {
+	if p.IpVersion == "4" {
 		e.ipv4Exporter.Export(p, ch)
 	} else {
 		e.ipv6Exporter.Export(p, ch)

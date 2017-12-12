@@ -21,6 +21,14 @@ var (
 	channelRegex     *regexp.Regexp
 )
 
+type context struct {
+	current   *protocol.Protocol
+	line      string
+	handled   bool
+	protocols []*protocol.Protocol
+	ipVersion string
+}
+
 func init() {
 	protocolRegex = regexp.MustCompile("^(?:1002\\-)?([^\\s]+)\\s+(BGP|OSPF|Direct|Device|Kernel)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)(?:\\s+(.*?))?$")
 	routeRegex = regexp.MustCompile("^\\s+Routes:\\s+(\\d+) imported, (?:(\\d+) filtered, )?(\\d+) exported(?:, (\\d+) preferred)?")
@@ -30,49 +38,60 @@ func init() {
 }
 
 // Parser parses bird output and returns protocol.Protocol structs
-func Parse(data []byte, ipVersion int) []*protocol.Protocol {
-	protocols := make([]*protocol.Protocol, 0)
-
+func Parse(data []byte, ipVersion string) []*protocol.Protocol {
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
-	var current *protocol.Protocol = nil
+
+	c := &context{protocols: make([]*protocol.Protocol, 0), ipVersion: ipVersion}
+
+	var handlers = []func(*context){
+		handleEmptyLine,
+		parseLineForProtocol,
+		parseLineForChannel,
+		parseLineForRoutes,
+		parseLineForRouteChanges,
+	}
 
 	for scanner.Scan() {
-		line := strings.TrimRight(scanner.Text(), " ")
-		if p, ok := parseLineForProtocol(line, ipVersion); ok {
-			current = p
-			protocols = append(protocols, current)
-		}
+		c.line = strings.TrimRight(scanner.Text(), " ")
+		c.handled = false
 
-		if current != nil {
-			parseLineForRoutes(line, current)
-			parseLineForRouteChanges(line, current)
-		}
-
-		if line == "" {
-			current = nil
+		for _, h := range handlers {
+			if !c.handled {
+				h(c)
+			}
 		}
 	}
 
-	return protocols
+	return c.protocols
 }
 
-func parseLineForProtocol(line string, ipVersion int) (*protocol.Protocol, bool) {
-	match := protocolRegex.FindStringSubmatch(line)
+func handleEmptyLine(c *context) {
+	if c.line != "" {
+		return
+	}
+
+	c.current = nil
+	c.handled = true
+}
+
+func parseLineForProtocol(c *context) {
+	match := protocolRegex.FindStringSubmatch(c.line)
 
 	if match == nil {
-		return nil, false
+		return
 	}
 
 	proto := parseProto(match[2])
 	ut := parseUptime(match[5])
 
-	p := protocol.NewProtocol(match[1], proto, ipVersion, ut)
-	p.Up = parseState(match[4])
+	c.current = protocol.NewProtocol(match[1], proto, c.ipVersion, ut)
+	c.current.Up = parseState(match[4])
 
-	fillAttributes(p, match)
+	fillAttributes(c.current, match)
 
-	return p, true
+	c.protocols = append(c.protocols, c.current)
+	c.handled = true
 }
 
 func parseProto(val string) int {
@@ -94,25 +113,6 @@ func parseProto(val string) int {
 	return protocol.PROTO_UNKNOWN
 }
 
-func parseLineForRoutes(line string, p *protocol.Protocol) {
-	match := routeRegex.FindStringSubmatch(line)
-
-	if match == nil {
-		return
-	}
-
-	p.Imported, _ = strconv.ParseInt(match[1], 10, 64)
-	p.Exported, _ = strconv.ParseInt(match[3], 10, 64)
-
-	if len(match[2]) > 0 {
-		p.Filtered, _ = strconv.ParseInt(match[2], 10, 64)
-	}
-
-	if len(match[4]) > 0 {
-		p.Preferred, _ = strconv.ParseInt(match[4], 10, 64)
-	}
-}
-
 func parseState(state string) int {
 	if state == "up" {
 		return 1
@@ -123,6 +123,7 @@ func parseState(state string) int {
 
 func parseUptime(value string) int {
 	match := uptimeRegex.FindStringSubmatch(value)
+
 	if match == nil {
 		return 0
 	}
@@ -158,18 +159,74 @@ func parseUptimeForTimestamp(timestamp string) int {
 	return int(d.Seconds())
 }
 
-func parseLineForRouteChanges(line string, p *protocol.Protocol) {
-	match := routeChangeRegex.FindStringSubmatch(line)
+func parseLineForChannel(c *context) {
+	if c.ipVersion != "" || c.current == nil {
+		return
+	}
+
+	channel := channelRegex.FindStringSubmatch(c.line)
+	if channel == nil {
+		return
+	}
+
+	if len(c.current.IpVersion) == 0 {
+		c.current.IpVersion = channel[1]
+	} else {
+		c.current = &protocol.Protocol{
+			Name:      c.current.Name,
+			Proto:     c.current.Proto,
+			Up:        c.current.Up,
+			Uptime:    c.current.Uptime,
+			IpVersion: channel[1],
+		}
+		c.protocols = append(c.protocols, c.current)
+	}
+
+	c.handled = true
+}
+
+func parseLineForRoutes(c *context) {
+	if c.current == nil {
+		return
+	}
+
+	match := routeRegex.FindStringSubmatch(c.line)
 	if match == nil {
 		return
 	}
 
-	c := getRouteChangeCount(match, p)
-	c.Received = parseRouteChangeValue(match[3])
-	c.Rejected = parseRouteChangeValue(match[4])
-	c.Filtered = parseRouteChangeValue(match[5])
-	c.Ignored = parseRouteChangeValue(match[6])
-	c.Accepted = parseRouteChangeValue(match[7])
+	c.current.Imported, _ = strconv.ParseInt(match[1], 10, 64)
+	c.current.Exported, _ = strconv.ParseInt(match[3], 10, 64)
+
+	if len(match[2]) > 0 {
+		c.current.Filtered, _ = strconv.ParseInt(match[2], 10, 64)
+	}
+
+	if len(match[4]) > 0 {
+		c.current.Preferred, _ = strconv.ParseInt(match[4], 10, 64)
+	}
+
+	c.handled = true
+}
+
+func parseLineForRouteChanges(c *context) {
+	if c.current == nil {
+		return
+	}
+
+	match := routeChangeRegex.FindStringSubmatch(c.line)
+	if match == nil {
+		return
+	}
+
+	x := getRouteChangeCount(match, c.current)
+	x.Received = parseRouteChangeValue(match[3])
+	x.Rejected = parseRouteChangeValue(match[4])
+	x.Filtered = parseRouteChangeValue(match[5])
+	x.Ignored = parseRouteChangeValue(match[6])
+	x.Accepted = parseRouteChangeValue(match[7])
+
+	c.handled = true
 }
 
 func getRouteChangeCount(values []string, p *protocol.Protocol) *protocol.RouteChangeCount {

@@ -1,9 +1,9 @@
 package ospf
 
 import (
+	"github.com/czerwonk/bird_exporter/metrics"
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/czerwonk/bird_exporter/metrics"
 )
 
 type desc struct {
@@ -11,13 +11,13 @@ type desc struct {
 }
 
 type ospfMetricExporter struct {
-	descriptions map[int]*desc
+	descriptions map[string]*desc
 }
 
 func NewExporter(prefix string) metrics.MetricExporter {
-	d := make(map[int]*desc)
-	d[4] = getDesc(prefix+"ospf")
-	d[6] = getDesc(prefix+"ospfv3")
+	d := make(map[string]*desc)
+	d["4"] = getDesc(prefix + "ospf")
+	d["6"] = getDesc(prefix + "ospfv3")
 
 	return &ospfMetricExporter{descriptions: d}
 }
@@ -32,8 +32,8 @@ func getDesc(prefix string) *desc {
 }
 
 func (m *ospfMetricExporter) Describe(ch chan<- *prometheus.Desc) {
-	ch <- m.descriptions[4].runningDesc
-	ch <- m.descriptions[6].runningDesc
+	ch <- m.descriptions["4"].runningDesc
+	ch <- m.descriptions["6"].runningDesc
 }
 
 func (m *ospfMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric) {
