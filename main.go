@@ -12,7 +12,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "1.1.0"
+const version string = "1.2.0"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -76,41 +76,21 @@ func startServer() {
 			</body>
 			</html>`))
 	})
-	http.HandleFunc(*metricsPath, errorHandler(handleMetricsRequest))
+	http.HandleFunc(*metricsPath, handleMetricsRequest)
 
 	log.Infof("Listening for %s on %s\n", *metricsPath, *listenAddress)
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
 
-func errorHandler(f func(http.ResponseWriter, *http.Request) error) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		err := f(w, r)
+func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
+	reg := prometheus.NewRegistry()
+	p := enabledProtocols()
+	c := NewMetricCollector(*newFormat, p)
+	reg.MustRegister(c)
 
-		if err != nil {
-			log.Errorln(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
-}
-
-func handleMetricsRequest(w http.ResponseWriter, r *http.Request) error {
-	protocols, err := getProtocols()
-	if err != nil {
-		return err
-	}
-
-	if len(protocols) > 0 {
-		reg := prometheus.NewRegistry()
-		p := enabledProtocols()
-		c := NewMetricCollectorForProtocols(protocols, *newFormat, p)
-		reg.MustRegister(c)
-
-		promhttp.HandlerFor(reg, promhttp.HandlerOpts{
-			ErrorLog:      log.NewErrorLogger(),
-			ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
-	}
-
-	return nil
+	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
+		ErrorLog:      log.NewErrorLogger(),
+		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
 }
 func enabledProtocols() int {
 	res := 0

@@ -5,39 +5,54 @@ import (
 	"github.com/czerwonk/bird_exporter/ospf"
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/log"
+	"github.com/czerwonk/bird_exporter/client"
 )
 
 type MetricCollector struct {
-	protocols        []*protocol.Protocol
 	exporters        map[int][]metrics.MetricExporter
+	client *client.BirdClient
 	enabledProtocols int
 }
 
-func NewMetricCollectorForProtocols(protocols []*protocol.Protocol, newFormat bool, enabledProtocols int) *MetricCollector {
+func NewMetricCollector(newFormat bool, enabledProtocols int) *MetricCollector {
+	c := getClient()
 	var e map[int][]metrics.MetricExporter
 
 	if newFormat {
-		e = exportersForDefault()
+		e = exportersForDefault(c)
 	} else {
-		e = exportersForLegacy()
+		e = exportersForLegacy(c)
 	}
 
-	return &MetricCollector{protocols: protocols, exporters: e, enabledProtocols: enabledProtocols}
+	return &MetricCollector{exporters: e, client: c, enabledProtocols: enabledProtocols}
 }
 
-func exportersForLegacy() map[int][]metrics.MetricExporter {
+func getClient() *client.BirdClient {
+	o := &client.BirdClientOptions{
+		BirdSocket: *birdSocket,
+		Bird6Socket: *bird6Socket,
+		Bird6Enabled: *bird6Enabled,
+		BirdEnabled: *birdEnabled,
+		BirdV2: *birdV2,
+	}
+
+	return &client.BirdClient{Options: o}
+}
+
+func exportersForLegacy(c *client.BirdClient) map[int][]metrics.MetricExporter {
 	l := &metrics.LegacyLabelStrategy{}
 
 	return map[int][]metrics.MetricExporter{
 		protocol.BGP:    []metrics.MetricExporter{metrics.NewLegacyMetricExporter("bgp4_session", "bgp6_session", l)},
 		protocol.Direct: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("direct4", "direct6", l)},
 		protocol.Kernel: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("kernel4", "kernel6", l)},
-		protocol.OSPF:   []metrics.MetricExporter{metrics.NewLegacyMetricExporter("ospf", "ospfv3", l), ospf.NewExporter("")},
+		protocol.OSPF:   []metrics.MetricExporter{metrics.NewLegacyMetricExporter("ospf", "ospfv3", l), ospf.NewExporter("", c), },
 		protocol.Static: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("static4", "static6", l)},
 	}
 }
 
-func exportersForDefault() map[int][]metrics.MetricExporter {
+func exportersForDefault(c *client.BirdClient) map[int][]metrics.MetricExporter {
 	l := &metrics.DefaultLabelStrategy{}
 	e := metrics.NewGenericProtocolMetricExporter("bird_protocol", true, l)
 
@@ -45,7 +60,7 @@ func exportersForDefault() map[int][]metrics.MetricExporter {
 		protocol.BGP:    []metrics.MetricExporter{e},
 		protocol.Direct: []metrics.MetricExporter{e},
 		protocol.Kernel: []metrics.MetricExporter{e},
-		protocol.OSPF:   []metrics.MetricExporter{e, ospf.NewExporter("bird_")},
+		protocol.OSPF:   []metrics.MetricExporter{e, ospf.NewExporter("bird_", c), },
 		protocol.Static: []metrics.MetricExporter{e},
 	}
 }
@@ -59,7 +74,13 @@ func (m *MetricCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (m *MetricCollector) Collect(ch chan<- prometheus.Metric) {
-	for _, p := range m.protocols {
+	protocols, err := m.client.GetProtocols()
+	if err != nil {
+		log.Errorln(err)
+		return
+	}
+
+	for _, p := range protocols {
 		if p.Proto == protocol.PROTO_UNKNOWN || (m.enabledProtocols & p.Proto != p.Proto) {
 			continue
 		}
