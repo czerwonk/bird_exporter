@@ -10,7 +10,7 @@ import (
 
 func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	data := "foo    BGP      master   up     1481973060  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
-	p := parser.Parse([]byte(data), "4")
+	p := parser.ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -26,7 +26,7 @@ func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 
 func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 	data := "foo    BGP      master   up     00:01:00  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
-	p := parser.Parse([]byte(data), "4")
+	p := parser.ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -43,7 +43,7 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 
 func TestIpv6Bgp(t *testing.T) {
 	data := "foo    BGP      master   up     00:01:00  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
-	p := parser.Parse([]byte(data), "6")
+	p := parser.ParseProtocols([]byte(data), "6")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -52,7 +52,7 @@ func TestIpv6Bgp(t *testing.T) {
 
 func TestActiveBgp(t *testing.T) {
 	data := "bar    BGP      master   start   2016-01-01    Active\ntest\nbar"
-	p := parser.Parse([]byte(data), "4")
+	p := parser.ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -67,7 +67,7 @@ func TestActiveBgp(t *testing.T) {
 
 func Test2BgpSessions(t *testing.T) {
 	data := "foo    BGP      master   up     00:01:00  Established\ntest\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nbar    BGP      master   start   2016-01-01    Active\nxxx"
-	p := parser.Parse([]byte(data), "4")
+	p := parser.ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 2, len(p), t)
 }
 
@@ -79,7 +79,7 @@ func TestUpdateAndWithdrawCounts(t *testing.T) {
 		"    Import withdraws:            6          7          8          9         10\n" +
 		"    Export updates:             11         12         13         14         15\n" +
 		"    Export withdraws:           16         17         18         19        ---"
-	p := parser.Parse([]byte(data), "4")
+	p := parser.ParseProtocols([]byte(data), "4")
 	x := p[0]
 
 	assert.Int64Equal("import updates received", 1, x.ImportUpdates.Received, t)
@@ -141,7 +141,7 @@ func TestWithBird2(t *testing.T) {
 		"    Routes:         4 imported, 3 filtered, 2 exported, 1 preferred\n" +
 		"\n"
 
-	p := parser.Parse([]byte(data), "")
+	p := parser.ParseProtocols([]byte(data), "")
 	assert.IntEqual("protocols", 4, len(p), t)
 
 	x := p[0]
@@ -223,7 +223,7 @@ func TestWithBird2(t *testing.T) {
 
 func TestOspfOldTimeFormat(t *testing.T) {
 	data := "ospf1    OSPF      master   up     1481973060  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
-	p := parser.Parse([]byte(data), "4")
+	p := parser.ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -238,7 +238,7 @@ func TestOspfOldTimeFormat(t *testing.T) {
 
 func TestOspfCurrentTimeFormat(t *testing.T) {
 	data := "ospf1    OSPF      master   up     00:01:00  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
-	p := parser.Parse([]byte(data), "4")
+	p := parser.ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -254,7 +254,7 @@ func TestOspfCurrentTimeFormat(t *testing.T) {
 
 func TestOspfProtocolDown(t *testing.T) {
 	data := "o_hrz    OSPF     t_hrz    down   1494926415  \n  Preference:     150\n  Input filter:   ACCEPT\n  Output filter:  REJECT\nxxx"
-	p := parser.Parse([]byte(data), "6")
+	p := parser.ParseProtocols([]byte(data), "6")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -268,7 +268,7 @@ func TestOspfProtocolDown(t *testing.T) {
 
 func TestOspfRunning(t *testing.T) {
 	data := "ospf1    OSPF      master   up     00:01:00  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
-	p := parser.Parse([]byte(data), "4")
+	p := parser.ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
@@ -277,9 +277,46 @@ func TestOspfRunning(t *testing.T) {
 
 func TestOspfAlone(t *testing.T) {
 	data := "ospf1    OSPF      master   up     00:01:00  Alone\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
-	p := parser.Parse([]byte(data), "4")
+	p := parser.ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
 	assert.Float64Equal("running", 0, x.Attributes["running"], t)
+}
+
+func TestOspfArea(t *testing.T) {
+	data := "ospf1:\n" +
+		"RFC1583 compatibility: disabled\n" +
+		"Stub router: No\n" +
+		"RT scheduler tick: 1\n" +
+		"Number of areas: 2\n" +
+		"Number of LSAs in DB:   33\n" +
+		"    Area: 0.0.0.0 (0) [BACKBONE]\n" +
+		"        Stub:   No\n" +
+		"        NSSA:   No\n" +
+		"        Transit:    No\n" +
+		"        Number of interfaces:   3\n" +
+		"        Number of neighbors:    2\n" +
+		"        Number of adjacent neighbors:   1\n" +
+		"    Area: 0.0.0.1 (1)\n" +
+		"        Stub:   No\n" +
+		"        NSSA:   No\n" +
+		"        Transit:    No\n" +
+		"        Number of interfaces:   4\n" +
+		"        Number of neighbors:    6\n" +
+		"        Number of adjacent neighbors:   5\n"
+	a := parser.ParseOspf([]byte(data))
+	assert.IntEqual("areas", 2, len(a), t)
+
+	a1 := a[0]
+	assert.StringEqual("Area1 Name", "0", a1.Name, t)
+	assert.Int64Equal("Area1 InterfaceCount", 3, a1.InterfaceCount, t)
+	assert.Int64Equal("Area1 NeighborCount", 2, a1.NeighborCount, t)
+	assert.Int64Equal("Area1 NeighborAdjacentCount", 1, a1.NeighborAdjacentCount, t)
+
+	a2 := a[1]
+	assert.StringEqual("Area2 Name", "1", a2.Name, t)
+	assert.Int64Equal("Area2 InterfaceCount", 4, a2.InterfaceCount, t)
+	assert.Int64Equal("Area2 NeighborCount", 6, a2.NeighborCount, t)
+	assert.Int64Equal("Area2 NeighborAdjacentCount", 5, a2.NeighborAdjacentCount, t)
 }

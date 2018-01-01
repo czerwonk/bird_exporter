@@ -38,7 +38,7 @@ func init() {
 }
 
 // Parser parses bird output and returns protocol.Protocol structs
-func Parse(data []byte, ipVersion string) []*protocol.Protocol {
+func ParseProtocols(data []byte, ipVersion string) []*protocol.Protocol {
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
 
