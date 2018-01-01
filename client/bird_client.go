@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"github.com/czerwonk/bird_exporter/parser"
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/czerwonk/bird_socket"
@@ -11,11 +12,11 @@ type BirdClient struct {
 }
 
 type BirdClientOptions struct {
-	BirdV2 bool
-	BirdEnabled bool
+	BirdV2       bool
+	BirdEnabled  bool
 	Bird6Enabled bool
-	BirdSocket	string
-	Bird6Socket	string
+	BirdSocket   string
+	Bird6Socket  string
 }
 
 func (c *BirdClient) GetProtocols() ([]*protocol.Protocol, error) {
@@ -32,15 +33,25 @@ func (c *BirdClient) GetProtocols() ([]*protocol.Protocol, error) {
 		}
 	}
 
-	return c.getProtocolsFromBird(ipVersions)
+	return c.protocolsFromBird(ipVersions)
 }
 
-func (c *BirdClient) getProtocolsFromBird(ipVersions []string) ([]*protocol.Protocol, error) {
+func (c *BirdClient) GetOspfAreas(protocol *protocol.Protocol) ([]*protocol.OspfArea, error) {
+	sock := c.socketFor(protocol.IpVersion)
+	b, err := birdsocket.Query(sock, fmt.Sprintf("show ospf %s", protocol.Name))
+	if err != nil {
+		return nil, err
+	}
+
+	return parser.ParseOspf(b), nil
+}
+
+func (c *BirdClient) protocolsFromBird(ipVersions []string) ([]*protocol.Protocol, error) {
 	protocols := make([]*protocol.Protocol, 0)
 
 	for _, ipVersion := range ipVersions {
 		sock := c.socketFor(ipVersion)
-		s, err := c.getProtocolsFromSocket(sock, ipVersion)
+		s, err := c.protocolsFromSocket(sock, ipVersion)
 		if err != nil {
 			return nil, err
 		}
@@ -51,13 +62,13 @@ func (c *BirdClient) getProtocolsFromBird(ipVersions []string) ([]*protocol.Prot
 	return protocols, nil
 }
 
-func (c *BirdClient) getProtocolsFromSocket(socketPath string, ipVersion string) ([]*protocol.Protocol, error) {
+func (c *BirdClient) protocolsFromSocket(socketPath string, ipVersion string) ([]*protocol.Protocol, error) {
 	b, err := birdsocket.Query(socketPath, "show protocols all")
 	if err != nil {
 		return nil, err
 	}
 
-	return parser.Parse(b, ipVersion), nil
+	return parser.ParseProtocols(b, ipVersion), nil
 }
 
 func (c *BirdClient) socketFor(ipVersion string) string {
