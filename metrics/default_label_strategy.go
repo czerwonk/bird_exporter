@@ -21,9 +21,8 @@ func protoString(p *protocol.Protocol) string {
 	case protocol.OSPF:
 		if p.IpVersion == "4" {
 			return "OSPF"
-		} else {
-			return "OSPFv3"
 		}
+		return "OSPFv3"
 	case protocol.Static:
 		return "Static"
 	case protocol.Kernel:
