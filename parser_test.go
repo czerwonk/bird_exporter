@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"time"
 
 	"github.com/czerwonk/bird_exporter/parser"
 	"github.com/czerwonk/bird_exporter/protocol"
@@ -9,9 +10,11 @@ import (
 )
 
 func TestEstablishedBgpOldTimeFormat(t *testing.T) {
-	data := "foo    BGP      master   up     1481973060  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
+	data := "foo    BGP      master   up     1514768400  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
+	s := time.Date(2018, time.January, 1, 1, 0, 0, 0, time.UTC)
+	min := int(time.Since(s).Seconds())
 	p := parser.ParseProtocols([]byte(data), "4")
-	assert.IntEqual("protocols", 1, len(p), t)
+	max := int(time.Since(s).Seconds())
 
 	x := p[0]
 	assert.StringEqual("name", "foo", x.Name, t)
@@ -22,6 +25,7 @@ func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	assert.Int64Equal("filtered", 1, x.Filtered, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
 	assert.StringEqual("ipVersion", "4", x.IpVersion, t)
+	assert.That("uptime", "uptime is feasable", func() bool { return x.Uptime >= min && max <= x.Uptime }, t)
 }
 
 func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
@@ -39,6 +43,27 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
 	assert.StringEqual("ipVersion", "4", x.IpVersion, t)
 	assert.IntEqual("uptime", 60, x.Uptime, t)
+}
+
+func TestEstablishedBgpIsoLongTimeFormat(t *testing.T) {
+	data := "foo    BGP      master   up     2018-01-01 01:00:00  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
+	s := time.Date(2018, time.January, 1, 1, 0, 0, 0, time.UTC)
+	min := int(time.Since(s).Seconds())
+	p := parser.ParseProtocols([]byte(data), "4")
+	max := int(time.Since(s).Seconds())
+
+	assert.IntEqual("protocols", 1, len(p), t)
+
+	x := p[0]
+	assert.StringEqual("name", "foo", x.Name, t)
+	assert.IntEqual("proto", protocol.BGP, x.Proto, t)
+	assert.IntEqual("established", 1, x.Up, t)
+	assert.Int64Equal("imported", 12, x.Imported, t)
+	assert.Int64Equal("exported", 34, x.Exported, t)
+	assert.Int64Equal("filtered", 1, x.Filtered, t)
+	assert.Int64Equal("preferred", 100, x.Preferred, t)
+	assert.StringEqual("ipVersion", "4", x.IpVersion, t)
+	assert.That("uptime", "uptime is feasable", func() bool { return x.Uptime >= min && max <= x.Uptime }, t)
 }
 
 func TestIpv6Bgp(t *testing.T) {

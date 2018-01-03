@@ -30,9 +30,9 @@ type context struct {
 }
 
 func init() {
-	protocolRegex = regexp.MustCompile("^(?:1002\\-)?([^\\s]+)\\s+(BGP|OSPF|Direct|Device|Kernel)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)(?:\\s+(.*?))?$")
+	protocolRegex = regexp.MustCompile("^(?:1002\\-)?([^\\s]+)\\s+(BGP|OSPF|Direct|Device|Kernel)\\s+([^\\s]+)\\s+([^\\s]+)\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}|[^\\s]+)(?:\\s+(.*?))?$")
 	routeRegex = regexp.MustCompile("^\\s+Routes:\\s+(\\d+) imported, (?:(\\d+) filtered, )?(\\d+) exported(?:, (\\d+) preferred)?")
-	uptimeRegex = regexp.MustCompile("^(?:((\\d+):(\\d{2}):(\\d{2}))|\\d+)$")
+	uptimeRegex = regexp.MustCompile("^(?:((\\d+):(\\d{2}):(\\d{2}))|(\\d+)|(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}))$")
 	routeChangeRegex = regexp.MustCompile("(Import|Export) (updates|withdraws):\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s*")
 	channelRegex = regexp.MustCompile("Channel ipv(4|6)")
 }
@@ -126,11 +126,25 @@ func parseUptime(value string) int {
 		return 0
 	}
 
-	if match[1] != "" {
+	if len(match[1]) > 0 {
 		return parseUptimeForDuration(match)
 	}
 
-	return parseUptimeForTimestamp(value)
+	if len(match[5]) > 0 {
+		return parseUptimeForTimestamp(value)
+	}
+
+	return parseUptimeForIso(value)
+}
+
+func parseUptimeForIso(s string) int {
+	start, err := time.Parse("2006-01-02 15:04:05", s)
+	if err != nil {
+		log.Errorln(err)
+		return 0
+	}
+
+	return int(time.Since(start).Seconds())
 }
 
 func parseUptimeForDuration(duration []string) int {
@@ -140,7 +154,6 @@ func parseUptimeForDuration(duration []string) int {
 	str := fmt.Sprintf("%dh%dm%ds", h, m, s)
 
 	d, err := time.ParseDuration(str)
-
 	if err != nil {
 		log.Errorln(err)
 		return 0
