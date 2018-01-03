@@ -10,7 +10,7 @@ Since bird_exporter uses the bird unix sockets, bird has to be installed on the 
 ### Bird configuration
 To get meaningful uptime information bird has to be configured this way:
 ```
-timeformat protocol "%s";
+timeformat protocol     iso long;
 ```
 
 ## Important information for users of bird 2.0+
