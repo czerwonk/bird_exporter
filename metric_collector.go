@@ -43,11 +43,11 @@ func exportersForLegacy(c *client.BirdClient) map[int][]metrics.MetricExporter {
 	l := &metrics.LegacyLabelStrategy{}
 
 	return map[int][]metrics.MetricExporter{
-		protocol.BGP:    []metrics.MetricExporter{metrics.NewLegacyMetricExporter("bgp4_session", "bgp6_session", l)},
-		protocol.Direct: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("direct4", "direct6", l)},
-		protocol.Kernel: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("kernel4", "kernel6", l)},
-		protocol.OSPF:   []metrics.MetricExporter{metrics.NewLegacyMetricExporter("ospf", "ospfv3", l), metrics.NewOspfExporter("", c)},
-		protocol.Static: []metrics.MetricExporter{metrics.NewLegacyMetricExporter("static4", "static6", l)},
+		protocol.BGP:    {metrics.NewLegacyMetricExporter("bgp4_session", "bgp6_session", l)},
+		protocol.Direct: {metrics.NewLegacyMetricExporter("direct4", "direct6", l)},
+		protocol.Kernel: {metrics.NewLegacyMetricExporter("kernel4", "kernel6", l)},
+		protocol.OSPF:   {metrics.NewLegacyMetricExporter("ospf", "ospfv3", l), metrics.NewOspfExporter("", c)},
+		protocol.Static: {metrics.NewLegacyMetricExporter("static4", "static6", l)},
 	}
 }
 
@@ -56,11 +56,11 @@ func exportersForDefault(c *client.BirdClient) map[int][]metrics.MetricExporter 
 	e := metrics.NewGenericProtocolMetricExporter("bird_protocol", true, l)
 
 	return map[int][]metrics.MetricExporter{
-		protocol.BGP:    []metrics.MetricExporter{e},
-		protocol.Direct: []metrics.MetricExporter{e},
-		protocol.Kernel: []metrics.MetricExporter{e},
-		protocol.OSPF:   []metrics.MetricExporter{e, metrics.NewOspfExporter("bird_", c)},
-		protocol.Static: []metrics.MetricExporter{e},
+		protocol.BGP:    {e},
+		protocol.Direct: {e},
+		protocol.Kernel: {e},
+		protocol.OSPF:   {e, metrics.NewOspfExporter("bird_", c)},
+		protocol.Static: {e},
 	}
 }
 
