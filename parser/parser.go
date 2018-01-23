@@ -30,11 +30,11 @@ type context struct {
 }
 
 func init() {
-	protocolRegex = regexp.MustCompile("^(?:1002\\-)?([^\\s]+)\\s+(BGP|OSPF|Direct|Device|Kernel)\\s+([^\\s]+)\\s+([^\\s]+)\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}|[^\\s]+)(?:\\s+(.*?))?$")
-	routeRegex = regexp.MustCompile("^\\s+Routes:\\s+(\\d+) imported, (?:(\\d+) filtered, )?(\\d+) exported(?:, (\\d+) preferred)?")
-	uptimeRegex = regexp.MustCompile("^(?:((\\d+):(\\d{2}):(\\d{2}))|(\\d+)|(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}))$")
-	routeChangeRegex = regexp.MustCompile("(Import|Export) (updates|withdraws):\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s+(\\d+|---)\\s*")
-	channelRegex = regexp.MustCompile("Channel ipv(4|6)")
+	protocolRegex = regexp.MustCompile(`^(?:1002\-)?([^\s]+)\s+(BGP|OSPF|Direct|Device|Kernel)\s+([^\s]+)\s+([^\s]+)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|[^\s]+)(?:\s+(.*?))?$`)
+	routeRegex = regexp.MustCompile(`^\s+Routes:\s+(\d+) imported, (?:(\d+) filtered, )?(\d+) exported(?:, (\d+) preferred)?`)
+	uptimeRegex = regexp.MustCompile(`^(?:((\d+):(\d{2}):(\d{2}))|(\d+)|(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}))$`)
+	routeChangeRegex = regexp.MustCompile(`(Import|Export) (updates|withdraws):\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s*`)
+	channelRegex = regexp.MustCompile(`Channel ipv(4|6)`)
 }
 
 // Parser parses bird output and returns protocol.Protocol structs
