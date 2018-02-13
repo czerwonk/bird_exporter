@@ -19,6 +19,7 @@ MAKE_COLOR=\033[33;01m%-20s\033[0m
 
 MAIN = github.com/czerwonk/bird_exporter
 SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
+PKGS = $(shell go list ./... | grep -v '/vendor/')
 
 .DEFAULT_GOAL := help
 
@@ -47,7 +48,7 @@ build: ## Make binary
 .PHONY: test
 test: ## Launch unit tests
 	@echo -e "$(OK_COLOR)[$(APP)] Launch unit tests $(NO_COLOR)"
-	@go test .
+	@$(foreach pkg,$(PKGS),go test $(pkg) || exit;)
 
 .PHONY: lint
 lint: ## Launch golint
