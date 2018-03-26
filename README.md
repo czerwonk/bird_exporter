@@ -59,7 +59,8 @@ go get -u github.com/czerwonk/bird_exporter
 bird_exporter -format.new=true
 ```
 
-###### BIRD RS Dashboard
+## BIRD RS Dashboard
+this sample dashboard was created by [openbsod](https://github.com/openbsod). Thanks for contributing!
 
 https://grafana.com/dashboards/5259
 
