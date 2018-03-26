@@ -63,7 +63,7 @@ bird_exporter -format.new=true
 
 https://grafana.com/dashboards/5259
 
-![alt text](https://github.com/openbsod/bird_exporter/blob/master/img/bird_exporter.png)
+![alt text](https://github.com/czerwonk/bird_exporter/blob/master/img/bird_exporter.png)
 
 ## Features
 * BGP session state
