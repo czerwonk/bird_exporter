@@ -14,6 +14,7 @@ func (*DefaultLabelStrategy) labelNames() []string {
 func (*DefaultLabelStrategy) labelValues(p *protocol.Protocol) []string {
 	return []string{p.Name, protoString(p), p.IpVersion}
 }
+
 func protoString(p *protocol.Protocol) string {
 	switch p.Proto {
 	case protocol.BGP:
