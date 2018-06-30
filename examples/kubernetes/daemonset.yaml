@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: bird-exporter
+  namespace: kube-system
+  labels:
+    app: bird-exporter
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: bird-exporter
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: bird-exporter
+        image: bird_exporter:latest
+        args: ["-format.new=true", "-bird.socket=/var/run/bird/bird.ctl"]
+        resources:
+          limits:
+            cpu: 100m
+            memory: 32Mi
+          requests:
+            cpu: 100m
+            memory: 32Mi
+        volumeMounts:
+        - mountPath: /var/run/bird/
+          name: bird-socket
+          readOnly: true
+        ports:
+          - containerPort: 9324
+            name: metrics
+      volumes:
+      - name: bird-socket
+        hostPath:
+          path: /var/run/bird/
