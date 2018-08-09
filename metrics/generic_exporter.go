@@ -43,7 +43,7 @@ func NewGenericProtocolMetricExporter(prefix string, newNaming bool, labelStrate
 }
 
 func (m *GenericProtocolMetricExporter) initDesc(prefix string, newNaming bool) {
-	labels := m.labelStrategy.labelNames()
+	labels := m.labelStrategy.LabelNames()
 	m.upDesc = prometheus.NewDesc(prefix+"_up", "Protocol is up", labels, nil)
 
 	if newNaming {
@@ -111,7 +111,7 @@ func (m *GenericProtocolMetricExporter) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (m *GenericProtocolMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric) {
-	l := m.labelStrategy.labelValues(p)
+	l := m.labelStrategy.LabelValues(p)
 	ch <- prometheus.MustNewConstMetric(m.upDesc, prometheus.GaugeValue, float64(p.Up), l...)
 	ch <- prometheus.MustNewConstMetric(m.importCountDesc, prometheus.GaugeValue, float64(p.Imported), l...)
 	ch <- prometheus.MustNewConstMetric(m.exportCountDesc, prometheus.GaugeValue, float64(p.Exported), l...)
