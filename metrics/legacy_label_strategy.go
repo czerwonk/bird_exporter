@@ -5,10 +5,10 @@ import "github.com/czerwonk/bird_exporter/protocol"
 type LegacyLabelStrategy struct {
 }
 
-func (*LegacyLabelStrategy) labelNames() []string {
+func (*LegacyLabelStrategy) LabelNames() []string {
 	return []string{"name"}
 }
 
-func (*LegacyLabelStrategy) labelValues(p *protocol.Protocol) []string {
+func (*LegacyLabelStrategy) LabelValues(p *protocol.Protocol) []string {
 	return []string{p.Name}
 }

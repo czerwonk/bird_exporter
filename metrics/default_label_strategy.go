@@ -7,11 +7,11 @@ import (
 type DefaultLabelStrategy struct {
 }
 
-func (*DefaultLabelStrategy) labelNames() []string {
+func (*DefaultLabelStrategy) LabelNames() []string {
 	return []string{"name", "proto", "ip_version"}
 }
 
-func (*DefaultLabelStrategy) labelValues(p *protocol.Protocol) []string {
+func (*DefaultLabelStrategy) LabelValues(p *protocol.Protocol) []string {
 	return []string{p.Name, protoString(p), p.IpVersion}
 }
 
