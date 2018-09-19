@@ -6,6 +6,6 @@ workdir ${GOPATH}/src/github.com/czerwonk/bird_exporter
 copy . .
 run make deps build && cp bird_exporter /bird_exporter
 
-from golang:1.10
+from debian:stretch-slim
 copy --from=builder /bird_exporter /bird_exporter
 entrypoint ["/bird_exporter"]
