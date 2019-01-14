@@ -1,5 +1,6 @@
 # bird_exporter 
 [![Build Status](https://travis-ci.org/czerwonk/bird_exporter.svg)](https://travis-ci.org/czerwonk/bird_exporter)
+[![Docker Build Status](https://img.shields.io/docker/build/czerwonk/bird_exporter.svg)](https://hub.docker.com/r/czerwonk/bird_exporter/builds)
 [![Go Report Card](https://goreportcard.com/badge/github.com/czerwonk/bird_exporter)](https://goreportcard.com/report/github.com/czerwonk/bird_exporter)
 
 Metric exporter for bird routing daemon to use with Prometheus
