@@ -37,7 +37,7 @@ func init() {
 	channelRegex = regexp.MustCompile(`Channel ipv(4|6)`)
 }
 
-// Parser parses bird output and returns protocol.Protocol structs
+// ParseProtocols parses bird output and returns protocol.Protocol structs
 func ParseProtocols(data []byte, ipVersion string) []*protocol.Protocol {
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
@@ -247,13 +247,13 @@ func getRouteChangeCount(values []string, p *protocol.Protocol) *protocol.RouteC
 		}
 
 		return &p.ImportWithdraws
-	} else {
-		if values[2] == "updates" {
-			return &p.ExportUpdates
-		}
-
-		return &p.ExportWithdraws
 	}
+
+	if values[2] == "updates" {
+		return &p.ExportUpdates
+	}
+
+	return &p.ExportWithdraws
 }
 
 func parseRouteChangeValue(value string) int64 {

@@ -6,6 +6,7 @@ github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a h1:BtpsbiV638WQZwhA98
 github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/czerwonk/bird_socket v0.0.0-20170701072538-fe8194eb5598 h1:PoKf7YEmuDOGzXD52jaJhZeOuwRrgv9FbZF8yfyoF7A=
 github.com/czerwonk/bird_socket v0.0.0-20170701072538-fe8194eb5598/go.mod h1:SQ2xpIC3W7ygMomUYEsxXBeun7RML/HCNXj24fbz+XI=
+github.com/czerwonk/testutils v0.0.0-20170526233935-dd9dabe360d4 h1:1QQjuJMb2LVM/sk4HS7svnGjM8um7EWk8lD5BwZ2X28=
 github.com/czerwonk/testutils v0.0.0-20170526233935-dd9dabe360d4/go.mod h1:Xibh2UDW2TbNjbi8QON4p0QxiYK/RM5USagAW7J3jUM=
 github.com/golang/protobuf v0.0.0-20170920220647-130e6b02ab05 h1:Kesru7U6Mhpf/x7rthxAKnr586VFmoE2NdEvkOKvfjg=
 github.com/golang/protobuf v0.0.0-20170920220647-130e6b02ab05/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
