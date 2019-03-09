@@ -6,7 +6,7 @@
 Metric exporter for bird routing daemon to use with Prometheus
 
 ## Remarks
-Since bird_exporter uses the bird unix sockets, bird has to be installed on the same mashine as bird_exporter. Also the user executing bird_exporter must have permission to access the bird socket files. 
+Since bird_exporter uses the bird unix sockets, bird has to be installed on the same maschine as bird_exporter. Also the user executing bird_exporter must have permission to access the bird socket files. 
 
 ### Bird configuration
 To get meaningful uptime information bird has to be configured this way:
