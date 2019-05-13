@@ -9,4 +9,4 @@ WORKDIR /app
 COPY --from=builder /go/src/github.com/czerwonk/bird_exporter/app bird_exporter
 EXPOSE 9324
 
-ENTRYPOINT ./bird_exporter
+ENTRYPOINT ["/app/bird_exporter"]
