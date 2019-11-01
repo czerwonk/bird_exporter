@@ -2,15 +2,18 @@ package client
 
 import (
 	"fmt"
+
 	"github.com/czerwonk/bird_exporter/parser"
 	"github.com/czerwonk/bird_exporter/protocol"
-	"github.com/czerwonk/bird_socket"
+	birdsocket "github.com/czerwonk/bird_socket"
 )
 
+// BirdClient communicates with the bird socket to retrieve information
 type BirdClient struct {
 	Options *BirdClientOptions
 }
 
+// BirdClientOptions defines options to connect to bird
 type BirdClientOptions struct {
 	BirdV2       bool
 	BirdEnabled  bool
@@ -19,6 +22,7 @@ type BirdClientOptions struct {
 	Bird6Socket  string
 }
 
+// GetProtocols retrieves protocol information and statistics from bird
 func (c *BirdClient) GetProtocols() ([]*protocol.Protocol, error) {
 	ipVersions := make([]string, 0)
 	if c.Options.BirdV2 {
@@ -36,8 +40,9 @@ func (c *BirdClient) GetProtocols() ([]*protocol.Protocol, error) {
 	return c.protocolsFromBird(ipVersions)
 }
 
-func (c *BirdClient) GetOspfAreas(protocol *protocol.Protocol) ([]*protocol.OspfArea, error) {
-	sock := c.socketFor(protocol.IpVersion)
+// GetOSPFAreas retrieves OSPF specific information from bird
+func (c *BirdClient) GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.OspfArea, error) {
+	sock := c.socketFor(protocol.IPVersion)
 	b, err := birdsocket.Query(sock, fmt.Sprintf("show ospf %s", protocol.Name))
 	if err != nil {
 		return nil, err

@@ -18,6 +18,7 @@ var (
 	routeRegex       *regexp.Regexp
 	uptimeRegex      *regexp.Regexp
 	routeChangeRegex *regexp.Regexp
+	filterRegex      *regexp.Regexp
 	channelRegex     *regexp.Regexp
 )
 
@@ -34,6 +35,7 @@ func init() {
 	routeRegex = regexp.MustCompile(`^\s+Routes:\s+(\d+) imported, (?:(\d+) filtered, )?(\d+) exported(?:, (\d+) preferred)?`)
 	uptimeRegex = regexp.MustCompile(`^(?:((\d+):(\d{2}):(\d{2}))|(\d+)|(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}))$`)
 	routeChangeRegex = regexp.MustCompile(`(Import|Export) (updates|withdraws):\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s*`)
+	filterRegex = regexp.MustCompile(`(Input|Output) filter:\s+(.*)`)
 	channelRegex = regexp.MustCompile(`Channel ipv(4|6)`)
 }
 
@@ -50,6 +52,7 @@ func ParseProtocols(data []byte, ipVersion string) []*protocol.Protocol {
 		parseLineForChannel,
 		parseLineForRoutes,
 		parseLineForRouteChanges,
+		parseLineForFilterName,
 	}
 
 	for scanner.Scan() {
@@ -180,15 +183,15 @@ func parseLineForChannel(c *context) {
 		return
 	}
 
-	if len(c.current.IpVersion) == 0 {
-		c.current.IpVersion = channel[1]
+	if len(c.current.IPVersion) == 0 {
+		c.current.IPVersion = channel[1]
 	} else {
 		c.current = &protocol.Protocol{
 			Name:      c.current.Name,
 			Proto:     c.current.Proto,
 			Up:        c.current.Up,
 			Uptime:    c.current.Uptime,
-			IpVersion: channel[1],
+			IPVersion: channel[1],
 		}
 		c.protocols = append(c.protocols, c.current)
 	}
@@ -262,6 +265,25 @@ func parseRouteChangeValue(value string) int64 {
 	}
 
 	return parseInt(value)
+}
+
+func parseLineForFilterName(c *context) {
+	if c.current == nil {
+		return
+	}
+
+	match := filterRegex.FindStringSubmatch(c.line)
+	if match == nil {
+		return
+	}
+
+	if match[1] == "Input" {
+		c.current.ImportFilter = match[2]
+	} else {
+		c.current.ExportFilter = match[2]
+	}
+
+	c.handled = true
 }
 
 func parseInt(value string) int64 {

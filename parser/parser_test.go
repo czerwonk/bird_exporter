@@ -23,7 +23,7 @@ func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("filtered", 1, x.Filtered, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
-	assert.StringEqual("ipVersion", "4", x.IpVersion, t)
+	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
 	assert.That("uptime", "uptime is feasable", func() bool { return x.Uptime >= min && max <= x.Uptime }, t)
 }
 
@@ -40,7 +40,7 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("filtered", 1, x.Filtered, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
-	assert.StringEqual("ipVersion", "4", x.IpVersion, t)
+	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
 	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
 
@@ -61,7 +61,7 @@ func TestEstablishedBgpIsoLongTimeFormat(t *testing.T) {
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("filtered", 1, x.Filtered, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
-	assert.StringEqual("ipVersion", "4", x.IpVersion, t)
+	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
 	assert.That("uptime", "uptime is feasable", func() bool { return x.Uptime >= min && max <= x.Uptime }, t)
 }
 
@@ -71,7 +71,7 @@ func TestIpv6Bgp(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.StringEqual("ipVersion", "6", x.IpVersion, t)
+	assert.StringEqual("ipVersion", "6", x.IPVersion, t)
 }
 
 func TestActiveBgp(t *testing.T) {
@@ -85,7 +85,7 @@ func TestActiveBgp(t *testing.T) {
 	assert.IntEqual("established", 0, x.Up, t)
 	assert.IntEqual("imported", 0, int(x.Imported), t)
 	assert.IntEqual("exported", 0, int(x.Exported), t)
-	assert.StringEqual("ipVersion", "4", x.IpVersion, t)
+	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
 	assert.IntEqual("uptime", 0, int(x.Uptime), t)
 }
 
@@ -133,6 +133,8 @@ func TestWithBird2(t *testing.T) {
 		"bgp1       BGP        master     up     1494926415\n" +
 		"  Channel ipv6\n" +
 		"    Routes:         1 imported, 2 filtered, 3 exported, 4 preferred\n" +
+		"    Input filter:   none\n" +
+		"    Output filter:  all\n" +
 		"\n" +
 		"direct1    Direct     ---        up     1513027903\n" +
 		"  Channel ipv4\n" +
@@ -171,16 +173,18 @@ func TestWithBird2(t *testing.T) {
 	x := p[0]
 	assert.StringEqual("BGP ipv6 name", "bgp1", x.Name, t)
 	assert.IntEqual("BGP ipv6 proto", protocol.BGP, x.Proto, t)
-	assert.StringEqual("BGP ipv6 ip version", "6", x.IpVersion, t)
+	assert.StringEqual("BGP ipv6 ip version", "6", x.IPVersion, t)
 	assert.Int64Equal("BGP ipv6 imported", 1, x.Imported, t)
 	assert.Int64Equal("BGP ipv6 exported", 3, x.Exported, t)
 	assert.Int64Equal("BGP ipv6 filtered", 2, x.Filtered, t)
 	assert.Int64Equal("BGP ipv6 preferred", 4, x.Preferred, t)
+	assert.StringEqual("BGP import filter", "none", x.ImportFilter, t)
+	assert.StringEqual("BGP export filter", "all", x.ExportFilter, t)
 
 	x = p[1]
-	assert.StringEqual("BGP ipv4 name", "direct1", x.Name, t)
+	assert.StringEqual("Direct ipv4 name", "direct1", x.Name, t)
 	assert.IntEqual("Direct ipv4 proto", protocol.Direct, x.Proto, t)
-	assert.StringEqual("Direct ipv4 ip version", "4", x.IpVersion, t)
+	assert.StringEqual("Direct ipv4 ip version", "4", x.IPVersion, t)
 	assert.Int64Equal("Direct ipv4 imported", 12, x.Imported, t)
 	assert.Int64Equal("Direct ipv4 exported", 34, x.Exported, t)
 	assert.Int64Equal("Direct ipv4 filtered", 1, x.Filtered, t)
@@ -207,9 +211,9 @@ func TestWithBird2(t *testing.T) {
 	assert.Int64Equal("Direct ipv4 export withdraws accepted", 0, x.ExportWithdraws.Accepted, t)
 
 	x = p[2]
-	assert.StringEqual("BGP ipv4 name", "direct1", x.Name, t)
+	assert.StringEqual("Direct ipv6 name", "direct1", x.Name, t)
 	assert.IntEqual("Direct ipv6 proto", protocol.Direct, x.Proto, t)
-	assert.StringEqual("Direct ipv6 ip version", "6", x.IpVersion, t)
+	assert.StringEqual("Direct ipv6 ip version", "6", x.IPVersion, t)
 	assert.Int64Equal("Direct ipv6 imported", 3, x.Imported, t)
 	assert.Int64Equal("Direct ipv6 exported", 5, x.Exported, t)
 	assert.Int64Equal("Direct ipv6 filtered", 7, x.Filtered, t)
@@ -238,7 +242,7 @@ func TestWithBird2(t *testing.T) {
 	x = p[3]
 	assert.StringEqual("OSPF ipv4 name", "ospf1", x.Name, t)
 	assert.IntEqual("OSPF ipv4 proto", protocol.OSPF, x.Proto, t)
-	assert.StringEqual("OSPF ipv4 ip version", "4", x.IpVersion, t)
+	assert.StringEqual("OSPF ipv4 ip version", "4", x.IPVersion, t)
 	assert.Int64Equal("OSPF ipv4 imported", 4, x.Imported, t)
 	assert.Int64Equal("OSPF ipv4 exported", 2, x.Exported, t)
 	assert.Int64Equal("OSPF ipv4 filtered", 3, x.Filtered, t)
@@ -257,7 +261,7 @@ func TestOspfOldTimeFormat(t *testing.T) {
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
-	assert.StringEqual("ipVersion", "4", x.IpVersion, t)
+	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
 }
 
 func TestOspfCurrentTimeFormat(t *testing.T) {
@@ -272,7 +276,7 @@ func TestOspfCurrentTimeFormat(t *testing.T) {
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
-	assert.StringEqual("ipVersion", "4", x.IpVersion, t)
+	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
 	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
 
@@ -287,7 +291,7 @@ func TestOspfProtocolDown(t *testing.T) {
 	assert.IntEqual("up", 0, x.Up, t)
 	assert.Int64Equal("imported", 0, x.Imported, t)
 	assert.Int64Equal("exported", 0, x.Exported, t)
-	assert.StringEqual("ipVersion", "6", x.IpVersion, t)
+	assert.StringEqual("ipVersion", "6", x.IPVersion, t)
 }
 
 func TestOspfRunning(t *testing.T) {

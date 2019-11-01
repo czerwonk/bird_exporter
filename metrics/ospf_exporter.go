@@ -19,7 +19,8 @@ type ospfMetricExporter struct {
 	client       client.Client
 }
 
-func NewOspfExporter(prefix string, client client.Client) MetricExporter {
+// NewOSPFExporter creates a new MetricExporter for OSPF metrics
+func NewOSPFExporter(prefix string, client client.Client) MetricExporter {
 	d := make(map[string]*ospfDesc)
 	d["4"] = getDesc(prefix + "ospf")
 	d["6"] = getDesc(prefix + "ospfv3")
@@ -55,10 +56,10 @@ func (m *ospfMetricExporter) describe(ipVersion string, ch chan<- *prometheus.De
 }
 
 func (m *ospfMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric) {
-	d := m.descriptions[p.IpVersion]
+	d := m.descriptions[p.IPVersion]
 	ch <- prometheus.MustNewConstMetric(d.runningDesc, prometheus.GaugeValue, p.Attributes["running"], p.Name)
 
-	areas, err := m.client.GetOspfAreas(p)
+	areas, err := m.client.GetOSPFAreas(p)
 	if err != nil {
 		log.Errorln(err)
 		return

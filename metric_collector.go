@@ -46,7 +46,7 @@ func exportersForLegacy(c *client.BirdClient) map[int][]metrics.MetricExporter {
 		protocol.BGP:    {metrics.NewLegacyMetricExporter("bgp4_session", "bgp6_session", l)},
 		protocol.Direct: {metrics.NewLegacyMetricExporter("direct4", "direct6", l)},
 		protocol.Kernel: {metrics.NewLegacyMetricExporter("kernel4", "kernel6", l)},
-		protocol.OSPF:   {metrics.NewLegacyMetricExporter("ospf", "ospfv3", l), metrics.NewOspfExporter("", c)},
+		protocol.OSPF:   {metrics.NewLegacyMetricExporter("ospf", "ospfv3", l), metrics.NewOSPFExporter("", c)},
 		protocol.Static: {metrics.NewLegacyMetricExporter("static4", "static6", l)},
 	}
 }
@@ -59,7 +59,7 @@ func exportersForDefault(c *client.BirdClient) map[int][]metrics.MetricExporter 
 		protocol.BGP:    {e},
 		protocol.Direct: {e},
 		protocol.Kernel: {e},
-		protocol.OSPF:   {e, metrics.NewOspfExporter("bird_", c)},
+		protocol.OSPF:   {e, metrics.NewOSPFExporter("bird_", c)},
 		protocol.Static: {e},
 	}
 }

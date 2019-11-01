@@ -5,6 +5,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// GenericProtocolMetricExporter exports metrics retrieved from Bird routing daemon
 type GenericProtocolMetricExporter struct {
 	labelStrategy                   LabelStrategy
 	upDesc                          *prometheus.Desc
@@ -35,6 +36,7 @@ type GenericProtocolMetricExporter struct {
 	withdrawsExportAcceptCountDesc  *prometheus.Desc
 }
 
+// NewGenericProtocolMetricExporter creates a new instance of GenericProtocolMetricExporter
 func NewGenericProtocolMetricExporter(prefix string, newNaming bool, labelStrategy LabelStrategy) *GenericProtocolMetricExporter {
 	m := &GenericProtocolMetricExporter{labelStrategy: labelStrategy}
 	m.initDesc(prefix, newNaming)
