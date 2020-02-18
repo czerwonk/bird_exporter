@@ -15,6 +15,7 @@ import (
 
 var (
 	protocolRegex    *regexp.Regexp
+	descriptionRegex *regexp.Regexp
 	routeRegex       *regexp.Regexp
 	uptimeRegex      *regexp.Regexp
 	routeChangeRegex *regexp.Regexp
@@ -32,6 +33,7 @@ type context struct {
 
 func init() {
 	protocolRegex = regexp.MustCompile(`^(?:1002\-)?([^\s]+)\s+(BGP|OSPF|Direct|Device|Kernel|Static)\s+([^\s]+)\s+([^\s]+)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|[^\s]+)(?:\s+(.*?))?$`)
+	descriptionRegex = regexp.MustCompile(`Description:\s+(.*)`)
 	routeRegex = regexp.MustCompile(`^\s+Routes:\s+(\d+) imported, (?:(\d+) filtered, )?(\d+) exported(?:, (\d+) preferred)?`)
 	uptimeRegex = regexp.MustCompile(`^(?:((\d+):(\d{2}):(\d{2}))|(\d+)|(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}))$`)
 	routeChangeRegex = regexp.MustCompile(`(Import|Export) (updates|withdraws):\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s*`)
@@ -49,6 +51,7 @@ func ParseProtocols(data []byte, ipVersion string) []*protocol.Protocol {
 	var handlers = []func(*context){
 		handleEmptyLine,
 		parseLineForProtocol,
+		parseLineForDescription,
 		parseLineForChannel,
 		parseLineForRoutes,
 		parseLineForRouteChanges,
@@ -95,6 +98,20 @@ func parseLineForProtocol(c *context) {
 
 	c.protocols = append(c.protocols, c.current)
 	c.handled = true
+}
+
+func parseLineForDescription(c *context) {
+	match := descriptionRegex.FindStringSubmatch(c.line)
+
+	if match == nil {
+		return
+	}
+
+	if len(match) <= 1 {
+		return
+	}
+
+	c.current.Description = strings.Join(match[1:], " ")
 }
 
 func parseProto(val string) int {

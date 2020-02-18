@@ -7,5 +7,5 @@ import (
 
 type MetricExporter interface {
 	Describe(ch chan<- *prometheus.Desc)
-	Export(p *protocol.Protocol, ch chan<- prometheus.Metric)
+	Export(p *protocol.Protocol, ch chan<- prometheus.Metric, newFormat bool)
 }

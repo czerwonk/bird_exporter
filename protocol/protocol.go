@@ -11,6 +11,7 @@ const (
 
 type Protocol struct {
 	Name            string
+	Description     string
 	IPVersion       string
 	ImportFilter    string
 	ExportFilter    string
