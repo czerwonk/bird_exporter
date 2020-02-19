@@ -27,9 +27,10 @@ var (
 	enableStatic  = flag.Bool("proto.static", true, "Enables metrics for protocol Static")
 	enableDirect  = flag.Bool("proto.direct", true, "Enables metrics for protocol Direct")
 	// pre bird 2.0
-	bird6Socket  = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon (not compatible with -bird.v2)")
-	birdEnabled  = flag.Bool("bird.ipv4", true, "Get protocols from bird (not compatible with -bird.v2)")
-	bird6Enabled = flag.Bool("bird.ipv6", true, "Get protocols from bird6 (not compatible with -bird.v2)")
+	bird6Socket       = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon (not compatible with -bird.v2)")
+	birdEnabled       = flag.Bool("bird.ipv4", true, "Get protocols from bird (not compatible with -bird.v2)")
+	bird6Enabled      = flag.Bool("bird.ipv6", true, "Get protocols from bird6 (not compatible with -bird.v2)")
+	descriptionLabels = flag.Bool("format.description-labels", false, "Add labels from protocol descriptions.")
 )
 
 func init() {
@@ -85,7 +86,7 @@ func startServer() {
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	reg := prometheus.NewRegistry()
 	p := enabledProtocols()
-	c := NewMetricCollector(*newFormat, p)
+	c := NewMetricCollector(*newFormat, p, *descriptionLabels)
 	reg.MustRegister(c)
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{

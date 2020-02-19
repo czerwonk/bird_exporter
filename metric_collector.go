@@ -12,19 +12,25 @@ type MetricCollector struct {
 	exporters        map[int][]metrics.MetricExporter
 	client           *client.BirdClient
 	enabledProtocols int
+	newFormat        bool
 }
 
-func NewMetricCollector(newFormat bool, enabledProtocols int) *MetricCollector {
+func NewMetricCollector(newFormat bool, enabledProtocols int, descriptionLabels bool) *MetricCollector {
 	c := getClient()
 	var e map[int][]metrics.MetricExporter
 
 	if newFormat {
-		e = exportersForDefault(c)
+		e = exportersForDefault(c, descriptionLabels)
 	} else {
 		e = exportersForLegacy(c)
 	}
 
-	return &MetricCollector{exporters: e, client: c, enabledProtocols: enabledProtocols}
+	return &MetricCollector{
+		exporters:        e,
+		client:           c,
+		enabledProtocols: enabledProtocols,
+		newFormat:        newFormat,
+	}
 }
 
 func getClient() *client.BirdClient {
@@ -40,7 +46,7 @@ func getClient() *client.BirdClient {
 }
 
 func exportersForLegacy(c *client.BirdClient) map[int][]metrics.MetricExporter {
-	l := &metrics.LegacyLabelStrategy{}
+	l := metrics.NewLegacyLabelStrategy()
 
 	return map[int][]metrics.MetricExporter{
 		protocol.BGP:    {metrics.NewLegacyMetricExporter("bgp4_session", "bgp6_session", l)},
@@ -51,8 +57,8 @@ func exportersForLegacy(c *client.BirdClient) map[int][]metrics.MetricExporter {
 	}
 }
 
-func exportersForDefault(c *client.BirdClient) map[int][]metrics.MetricExporter {
-	l := &metrics.DefaultLabelStrategy{}
+func exportersForDefault(c *client.BirdClient, descriptionLabels bool) map[int][]metrics.MetricExporter {
+	l := metrics.NewDefaultLabelStrategy(descriptionLabels)
 	e := metrics.NewGenericProtocolMetricExporter("bird_protocol", true, l)
 
 	return map[int][]metrics.MetricExporter{
@@ -85,7 +91,7 @@ func (m *MetricCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		for _, e := range m.exporters[p.Proto] {
-			e.Export(p, ch)
+			e.Export(p, ch, m.newFormat)
 		}
 	}
 }

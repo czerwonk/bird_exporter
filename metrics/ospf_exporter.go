@@ -55,7 +55,7 @@ func (m *ospfMetricExporter) describe(ipVersion string, ch chan<- *prometheus.De
 	ch <- d.neighborAdjacentCountDesc
 }
 
-func (m *ospfMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric) {
+func (m *ospfMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric, newFormat bool) {
 	d := m.descriptions[p.IPVersion]
 	ch <- prometheus.MustNewConstMetric(d.runningDesc, prometheus.GaugeValue, p.Attributes["running"], p.Name)
 
