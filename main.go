@@ -93,6 +93,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 		ErrorLog:      log.NewErrorLogger(),
 		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
 }
+
 func enabledProtocols() int {
 	res := 0
 
