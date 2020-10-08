@@ -158,7 +158,7 @@ func parseUptime(value string) int {
 }
 
 func parseUptimeForIso(s string) int {
-	start, err := time.Parse("2006-01-02 15:04:05", s)
+	start, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local)
 	if err != nil {
 		log.Errorln(err)
 		return 0
