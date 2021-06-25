@@ -51,6 +51,16 @@ func (c *BirdClient) GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.Ospf
 	return parser.ParseOspf(b), nil
 }
 
+// GetBGPStates retrieves BGP state information from bird
+func (c *BirdClient) GetBGPStates(protocol *protocol.Protocol) (*protocol.BgpState, error) {
+	sock := c.socketFor(protocol.IPVersion)
+	b, err := birdsocket.Query(sock, fmt.Sprintf("show protocols all %s", protocol.Name))
+	if err != nil {
+		return nil, err
+	}
+	return parser.ParseBgpState(b), nil
+}
+
 func (c *BirdClient) protocolsFromBird(ipVersions []string) ([]*protocol.Protocol, error) {
 	protocols := make([]*protocol.Protocol, 0)
 
