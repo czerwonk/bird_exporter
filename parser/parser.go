@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/czerwonk/bird_exporter/protocol"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
 var (

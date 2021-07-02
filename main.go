@@ -9,10 +9,10 @@ import (
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
-const version string = "1.2.5"
+const version string = "1.2.6"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -89,8 +89,10 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	c := NewMetricCollector(*newFormat, p, *descriptionLabels)
 	reg.MustRegister(c)
 
+	l := log.New()
+	l.Level = log.ErrorLevel
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
-		ErrorLog:      log.NewErrorLogger(),
+		ErrorLog:      l,
 		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
 }
 
