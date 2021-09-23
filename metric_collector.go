@@ -54,6 +54,7 @@ func exportersForLegacy(c *client.BirdClient) map[int][]metrics.MetricExporter {
 		protocol.Kernel: {metrics.NewLegacyMetricExporter("kernel4", "kernel6", l)},
 		protocol.OSPF:   {metrics.NewLegacyMetricExporter("ospf", "ospfv3", l), metrics.NewOSPFExporter("", c)},
 		protocol.Static: {metrics.NewLegacyMetricExporter("static4", "static6", l)},
+		protocol.Babel:  {metrics.NewLegacyMetricExporter("babel4", "babel6", l)},
 	}
 }
 
@@ -67,6 +68,7 @@ func exportersForDefault(c *client.BirdClient, descriptionLabels bool) map[int][
 		protocol.Kernel: {e},
 		protocol.OSPF:   {e, metrics.NewOSPFExporter("bird_", c)},
 		protocol.Static: {e},
+		protocol.Babel:  {e},
 	}
 }
 
