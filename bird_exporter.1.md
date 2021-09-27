@@ -60,6 +60,9 @@ bird_exporter must have read/write permission to access the BIRD Unix sockets.
 **-proto.static**
     Enables metrics for protocol Static
 
+**-proto.babel**
+    Enables metrics for protocol Babel
+
 **-version**
     Print version information
 

@@ -126,6 +126,8 @@ func parseProto(val string) int {
 		return protocol.Kernel
 	case "Static":
 		return protocol.Static
+	case "Babel":
+		return protocol.Babel
 	}
 
 	return protocol.PROTO_UNKNOWN

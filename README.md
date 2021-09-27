@@ -68,7 +68,7 @@ https://grafana.com/dashboards/5259
 ## Features
 * BGP session state
 * OSPF neighbor/interface count
-* imported / exported / filtered prefix counts / route state changes (BGP, OSPF, Kernel, Static, Device, Direct)
+* imported / exported / filtered prefix counts / route state changes (BGP, OSPF, Kernel, Static, Device, Direct, Babel)
 * protocol uptimes (BGP, OSPF)
 
 ## Third Party Components
