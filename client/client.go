@@ -10,4 +10,7 @@ type Client interface {
 
 	// GetOSPFAreas retrieves OSPF specific information from bird
 	GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.OspfArea, error)
+
+	// GetBGPStates retrieves BGP state information from bird
+	GetBGPStates(protocol *protocol.Protocol) (*protocol.BgpState, error)
 }
