@@ -30,7 +30,7 @@ func init() {
 
 var ospf *ospfRegex
 
-func ParseOspf(data []byte) []*protocol.OspfArea {
+func ParseOSPF(data []byte) []*protocol.OspfArea {
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
 
