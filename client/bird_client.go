@@ -48,7 +48,7 @@ func (c *BirdClient) GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.Ospf
 		return nil, err
 	}
 
-	return parser.ParseOspf(b), nil
+	return parser.ParseOSPF(b), nil
 }
 
 func (c *BirdClient) protocolsFromBird(ipVersions []string) ([]*protocol.Protocol, error) {
