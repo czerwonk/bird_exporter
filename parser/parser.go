@@ -93,8 +93,7 @@ func parseLineForProtocol(c *context) {
 
 	c.current = protocol.NewProtocol(match[1], proto, c.ipVersion, ut)
 	c.current.Up = parseState(match[4])
-
-	fillAttributes(c.current, match)
+	c.current.State = match[6]
 
 	c.protocols = append(c.protocols, c.current)
 	c.handled = true
@@ -114,7 +113,7 @@ func parseLineForDescription(c *context) {
 	c.current.Description = strings.Join(match[1:], " ")
 }
 
-func parseProto(val string) int {
+func parseProto(val string) protocol.Proto {
 	switch val {
 	case "BGP":
 		return protocol.BGP
@@ -128,6 +127,8 @@ func parseProto(val string) int {
 		return protocol.Static
 	case "Babel":
 		return protocol.Babel
+	case "RPKI":
+		return protocol.RPKI
 	}
 
 	return protocol.PROTO_UNKNOWN
@@ -314,18 +315,4 @@ func parseInt(value string) int64 {
 	}
 
 	return i
-}
-
-func fillAttributes(p *protocol.Protocol, m []string) {
-	if p.Proto == protocol.OSPF {
-		p.Attributes["running"] = float64(parseOspfRunning(m[6]))
-	}
-}
-
-func parseOspfRunning(state string) int {
-	if state == "Running" {
-		return 1
-	}
-
-	return 0
 }

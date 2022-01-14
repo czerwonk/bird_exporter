@@ -17,7 +17,7 @@ func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 
 	x := p[0]
 	assert.StringEqual("name", "foo", x.Name, t)
-	assert.IntEqual("proto", protocol.BGP, x.Proto, t)
+	assert.IntEqual("proto", int(protocol.BGP), int(x.Proto), t)
 	assert.IntEqual("established", 1, x.Up, t)
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
@@ -34,7 +34,7 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 
 	x := p[0]
 	assert.StringEqual("name", "foo", x.Name, t)
-	assert.IntEqual("proto", protocol.BGP, x.Proto, t)
+	assert.IntEqual("proto", int(protocol.BGP), int(x.Proto), t)
 	assert.IntEqual("established", 1, x.Up, t)
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
@@ -55,7 +55,7 @@ func TestEstablishedBgpIsoLongTimeFormat(t *testing.T) {
 
 	x := p[0]
 	assert.StringEqual("name", "foo", x.Name, t)
-	assert.IntEqual("proto", protocol.BGP, x.Proto, t)
+	assert.IntEqual("proto", int(protocol.BGP), int(x.Proto), t)
 	assert.IntEqual("established", 1, x.Up, t)
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
@@ -65,7 +65,7 @@ func TestEstablishedBgpIsoLongTimeFormat(t *testing.T) {
 	assert.That("uptime", "uptime is feasable", func() bool { return x.Uptime >= min && max <= x.Uptime }, t)
 }
 
-func TestIpv6Bgp(t *testing.T) {
+func TestIpv6BGP(t *testing.T) {
 	data := "foo    BGP      master   up     00:01:00  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
 	p := ParseProtocols([]byte(data), "6")
 	assert.IntEqual("protocols", 1, len(p), t)
@@ -74,14 +74,14 @@ func TestIpv6Bgp(t *testing.T) {
 	assert.StringEqual("ipVersion", "6", x.IPVersion, t)
 }
 
-func TestActiveBgp(t *testing.T) {
+func TestActiveBGP(t *testing.T) {
 	data := "bar    BGP      master   start   2016-01-01    Active\ntest\nbar"
 	p := ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
 	assert.StringEqual("name", "bar", x.Name, t)
-	assert.IntEqual("proto", protocol.BGP, x.Proto, t)
+	assert.IntEqual("proto", int(protocol.BGP), int(x.Proto), t)
 	assert.IntEqual("established", 0, x.Up, t)
 	assert.IntEqual("imported", 0, int(x.Imported), t)
 	assert.IntEqual("exported", 0, int(x.Exported), t)
@@ -89,7 +89,7 @@ func TestActiveBgp(t *testing.T) {
 	assert.IntEqual("uptime", 0, int(x.Uptime), t)
 }
 
-func Test2BgpSessions(t *testing.T) {
+func Test2BGPSessions(t *testing.T) {
 	data := "foo    BGP      master   up     00:01:00  Established\ntest\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nbar    BGP      master   start   2016-01-01    Active\nxxx"
 	p := ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 2, len(p), t)
@@ -172,7 +172,7 @@ func TestWithBird2(t *testing.T) {
 
 	x := p[0]
 	assert.StringEqual("BGP ipv6 name", "bgp1", x.Name, t)
-	assert.IntEqual("BGP ipv6 proto", protocol.BGP, x.Proto, t)
+	assert.IntEqual("BGP ipv6 proto", int(protocol.BGP), int(x.Proto), t)
 	assert.StringEqual("BGP ipv6 ip version", "6", x.IPVersion, t)
 	assert.Int64Equal("BGP ipv6 imported", 1, x.Imported, t)
 	assert.Int64Equal("BGP ipv6 exported", 3, x.Exported, t)
@@ -183,7 +183,7 @@ func TestWithBird2(t *testing.T) {
 
 	x = p[1]
 	assert.StringEqual("Direct ipv4 name", "direct1", x.Name, t)
-	assert.IntEqual("Direct ipv4 proto", protocol.Direct, x.Proto, t)
+	assert.IntEqual("Direct ipv4 proto", int(protocol.Direct), int(x.Proto), t)
 	assert.StringEqual("Direct ipv4 ip version", "4", x.IPVersion, t)
 	assert.Int64Equal("Direct ipv4 imported", 12, x.Imported, t)
 	assert.Int64Equal("Direct ipv4 exported", 34, x.Exported, t)
@@ -212,7 +212,7 @@ func TestWithBird2(t *testing.T) {
 
 	x = p[2]
 	assert.StringEqual("Direct ipv6 name", "direct1", x.Name, t)
-	assert.IntEqual("Direct ipv6 proto", protocol.Direct, x.Proto, t)
+	assert.IntEqual("Direct ipv6 proto", int(protocol.Direct), int(x.Proto), t)
 	assert.StringEqual("Direct ipv6 ip version", "6", x.IPVersion, t)
 	assert.Int64Equal("Direct ipv6 imported", 3, x.Imported, t)
 	assert.Int64Equal("Direct ipv6 exported", 5, x.Exported, t)
@@ -241,7 +241,7 @@ func TestWithBird2(t *testing.T) {
 
 	x = p[3]
 	assert.StringEqual("OSPF ipv4 name", "ospf1", x.Name, t)
-	assert.IntEqual("OSPF ipv4 proto", protocol.OSPF, x.Proto, t)
+	assert.IntEqual("OSPF ipv4 proto", int(protocol.OSPF), int(x.Proto), t)
 	assert.StringEqual("OSPF ipv4 ip version", "4", x.IPVersion, t)
 	assert.Int64Equal("OSPF ipv4 imported", 4, x.Imported, t)
 	assert.Int64Equal("OSPF ipv4 exported", 2, x.Exported, t)
@@ -249,14 +249,14 @@ func TestWithBird2(t *testing.T) {
 	assert.Int64Equal("OSPF ipv4 preferred", 1, x.Preferred, t)
 }
 
-func TestOspfOldTimeFormat(t *testing.T) {
+func TestOSPFOldTimeFormat(t *testing.T) {
 	data := "ospf1    OSPF      master   up     1481973060  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
 	p := ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
 	assert.StringEqual("name", "ospf1", x.Name, t)
-	assert.IntEqual("proto", protocol.OSPF, x.Proto, t)
+	assert.IntEqual("proto", int(protocol.OSPF), int(x.Proto), t)
 	assert.IntEqual("up", 1, x.Up, t)
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
@@ -264,14 +264,14 @@ func TestOspfOldTimeFormat(t *testing.T) {
 	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
 }
 
-func TestOspfCurrentTimeFormat(t *testing.T) {
+func TestOSPFCurrentTimeFormat(t *testing.T) {
 	data := "ospf1    OSPF      master   up     00:01:00  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
 	p := ParseProtocols([]byte(data), "4")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
 	assert.StringEqual("name", "ospf1", x.Name, t)
-	assert.IntEqual("proto", protocol.OSPF, x.Proto, t)
+	assert.IntEqual("proto", int(protocol.OSPF), int(x.Proto), t)
 	assert.IntEqual("up", 1, x.Up, t)
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
@@ -280,39 +280,21 @@ func TestOspfCurrentTimeFormat(t *testing.T) {
 	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
 
-func TestOspfProtocolDown(t *testing.T) {
+func TestOSPFProtocolDown(t *testing.T) {
 	data := "o_hrz    OSPF     t_hrz    down   1494926415  \n  Preference:     150\n  Input filter:   ACCEPT\n  Output filter:  REJECT\nxxx"
 	p := ParseProtocols([]byte(data), "6")
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
 	assert.StringEqual("name", "o_hrz", x.Name, t)
-	assert.IntEqual("proto", protocol.OSPF, x.Proto, t)
+	assert.IntEqual("proto", int(protocol.OSPF), int(x.Proto), t)
 	assert.IntEqual("up", 0, x.Up, t)
 	assert.Int64Equal("imported", 0, x.Imported, t)
 	assert.Int64Equal("exported", 0, x.Exported, t)
 	assert.StringEqual("ipVersion", "6", x.IPVersion, t)
 }
 
-func TestOspfRunning(t *testing.T) {
-	data := "ospf1    OSPF      master   up     00:01:00  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
-	p := ParseProtocols([]byte(data), "4")
-	assert.IntEqual("protocols", 1, len(p), t)
-
-	x := p[0]
-	assert.Float64Equal("running", 1, x.Attributes["running"], t)
-}
-
-func TestOspfAlone(t *testing.T) {
-	data := "ospf1    OSPF      master   up     00:01:00  Alone\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
-	p := ParseProtocols([]byte(data), "4")
-	assert.IntEqual("protocols", 1, len(p), t)
-
-	x := p[0]
-	assert.Float64Equal("running", 0, x.Attributes["running"], t)
-}
-
-func TestOspfArea(t *testing.T) {
+func TestOSPFArea(t *testing.T) {
 	data := "ospf1:\n" +
 		"RFC1583 compatibility: disabled\n" +
 		"Stub router: No\n" +
@@ -347,4 +329,16 @@ func TestOspfArea(t *testing.T) {
 	assert.Int64Equal("Area2 InterfaceCount", 4, a2.InterfaceCount, t)
 	assert.Int64Equal("Area2 NeighborCount", 6, a2.NeighborCount, t)
 	assert.Int64Equal("Area2 NeighborAdjacentCount", 5, a2.NeighborAdjacentCount, t)
+}
+
+func TestRPKIUp(t *testing.T) {
+	data := "rpki1      RPKI       ---        up     2021-12-31 13:04:29  Established"
+	p := ParseProtocols([]byte(data), "4")
+	assert.IntEqual("protocols", 1, len(p), t)
+
+	x := p[0]
+	assert.StringEqual("name", "rpki1", x.Name, t)
+	assert.IntEqual("proto", int(protocol.RPKI), int(x.Proto), t)
+	assert.StringEqual("state", "Established", x.State, t)
+	assert.IntEqual("up", 1, x.Up, t)
 }

@@ -9,15 +9,15 @@ import (
 )
 
 type MetricCollector struct {
-	exporters        map[int][]metrics.MetricExporter
+	exporters        map[protocol.Proto][]metrics.MetricExporter
 	client           *client.BirdClient
-	enabledProtocols int
+	enabledProtocols protocol.Proto
 	newFormat        bool
 }
 
-func NewMetricCollector(newFormat bool, enabledProtocols int, descriptionLabels bool) *MetricCollector {
+func NewMetricCollector(newFormat bool, enabledProtocols protocol.Proto, descriptionLabels bool) *MetricCollector {
 	c := getClient()
-	var e map[int][]metrics.MetricExporter
+	var e map[protocol.Proto][]metrics.MetricExporter
 
 	if newFormat {
 		e = exportersForDefault(c, descriptionLabels)
@@ -45,30 +45,32 @@ func getClient() *client.BirdClient {
 	return &client.BirdClient{Options: o}
 }
 
-func exportersForLegacy(c *client.BirdClient) map[int][]metrics.MetricExporter {
+func exportersForLegacy(c *client.BirdClient) map[protocol.Proto][]metrics.MetricExporter {
 	l := metrics.NewLegacyLabelStrategy()
 
-	return map[int][]metrics.MetricExporter{
+	return map[protocol.Proto][]metrics.MetricExporter{
 		protocol.BGP:    {metrics.NewLegacyMetricExporter("bgp4_session", "bgp6_session", l), metrics.NewBGPStateExporter("", c)},
 		protocol.Direct: {metrics.NewLegacyMetricExporter("direct4", "direct6", l)},
 		protocol.Kernel: {metrics.NewLegacyMetricExporter("kernel4", "kernel6", l)},
 		protocol.OSPF:   {metrics.NewLegacyMetricExporter("ospf", "ospfv3", l), metrics.NewOSPFExporter("", c)},
 		protocol.Static: {metrics.NewLegacyMetricExporter("static4", "static6", l)},
 		protocol.Babel:  {metrics.NewLegacyMetricExporter("babel4", "babel6", l)},
+		protocol.RPKI:   {metrics.NewLegacyMetricExporter("rpki4", "rpki6", l)},
 	}
 }
 
-func exportersForDefault(c *client.BirdClient, descriptionLabels bool) map[int][]metrics.MetricExporter {
+func exportersForDefault(c *client.BirdClient, descriptionLabels bool) map[protocol.Proto][]metrics.MetricExporter {
 	l := metrics.NewDefaultLabelStrategy(descriptionLabels)
 	e := metrics.NewGenericProtocolMetricExporter("bird_protocol", true, l)
 
-	return map[int][]metrics.MetricExporter{
+	return map[protocol.Proto][]metrics.MetricExporter{
 		protocol.BGP:    {e, metrics.NewBGPStateExporter("bird_", c)},
 		protocol.Direct: {e},
 		protocol.Kernel: {e},
 		protocol.OSPF:   {e, metrics.NewOSPFExporter("bird_", c)},
 		protocol.Static: {e},
 		protocol.Babel:  {e},
+		protocol.RPKI:   {e},
 	}
 }
 

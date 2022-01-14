@@ -26,6 +26,8 @@ The new format handles protocols more generic and allows a better query structur
 Also it adheres more to the metric naming best practices.
 In both formats protocol specific metrics are prefixed with the protocol name (e.g. OSPF running metric).
 
+Since verson 1.3 the new metric format is the default.
+
 This is a short example of the different formats:
 
 ### old format

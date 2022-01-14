@@ -21,8 +21,8 @@ func (m *bgpStateMetricExporter) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (m *bgpStateMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric, newFormat bool) {
-
 	labels := []string{"name", "proto", "state"}
+
 	bgpstateDesc := prometheus.NewDesc(m.prefix+"bgp_state_count", "Number of BGP connections at each state", labels, nil)
 	state, err := m.client.GetBGPStates(p)
 	if err != nil {

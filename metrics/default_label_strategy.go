@@ -80,6 +80,8 @@ func protoString(p *protocol.Protocol) string {
 		return "Direct"
 	case protocol.Babel:
 		return "Babel"
+	case protocol.RPKI:
+		return "RPKI"
 	}
 
 	return ""

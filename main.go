@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "1.2.7"
+const version string = "1.3.0"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -20,13 +20,14 @@ var (
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	birdSocket    = flag.String("bird.socket", "/var/run/bird.ctl", "Socket to communicate with bird routing daemon")
 	birdV2        = flag.Bool("bird.v2", false, "Bird major version >= 2.0 (multi channel protocols)")
-	newFormat     = flag.Bool("format.new", false, "New metric format (more convenient / generic)")
-	enableBgp     = flag.Bool("proto.bgp", true, "Enables metrics for protocol BGP")
-	enableOspf    = flag.Bool("proto.ospf", true, "Enables metrics for protocol OSPF")
+	newFormat     = flag.Bool("format.new", true, "New metric format (more convenient / generic)")
+	enableBGP     = flag.Bool("proto.bgp", true, "Enables metrics for protocol BGP")
+	enableOSPF    = flag.Bool("proto.ospf", true, "Enables metrics for protocol OSPF")
 	enableKernel  = flag.Bool("proto.kernel", true, "Enables metrics for protocol Kernel")
 	enableStatic  = flag.Bool("proto.static", true, "Enables metrics for protocol Static")
 	enableDirect  = flag.Bool("proto.direct", true, "Enables metrics for protocol Direct")
 	enableBabel   = flag.Bool("proto.babel", true, "Enables metrics for protocol Babel")
+	enableRPKI    = flag.Bool("proto.rpki", true, "Enables metrics for protocol RPKI")
 	// pre bird 2.0
 	bird6Socket       = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon (not compatible with -bird.v2)")
 	birdEnabled       = flag.Bool("bird.ipv4", true, "Get protocols from bird (not compatible with -bird.v2)")
@@ -97,13 +98,13 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
 }
 
-func enabledProtocols() int {
-	res := 0
+func enabledProtocols() protocol.Proto {
+	res := protocol.Proto(0)
 
-	if *enableBgp {
+	if *enableBGP {
 		res |= protocol.BGP
 	}
-	if *enableOspf {
+	if *enableOSPF {
 		res |= protocol.OSPF
 	}
 	if *enableKernel {
@@ -117,6 +118,9 @@ func enabledProtocols() int {
 	}
 	if *enableBabel {
 		res |= protocol.Babel
+	}
+	if *enableRPKI {
+		res |= protocol.RPKI
 	}
 
 	return res

@@ -32,7 +32,7 @@ func (m *GenericProtocolMetricExporter) Export(p *protocol.Protocol, ch chan<- p
 	var filterCountDesc *prometheus.Desc
 	var preferredCountDesc *prometheus.Desc
 
-	upDesc := prometheus.NewDesc(m.prefix+"_up", "Protocol is up", labels, nil)
+	upDesc := prometheus.NewDesc(m.prefix+"_up", "Protocol is up", append(labels, "state"), nil)
 
 	if newNaming {
 		importCountDesc = prometheus.NewDesc(m.prefix+"_prefix_import_count", "Number of imported routes", labels, nil)
@@ -69,7 +69,7 @@ func (m *GenericProtocolMetricExporter) Export(p *protocol.Protocol, ch chan<- p
 	withdrawsExportReceiveCountDesc := prometheus.NewDesc(m.prefix+"_changes_withdraw_export_receive_count", "Number of outgoing withdraws", labels, nil)
 
 	l := m.labelStrategy.LabelValues(p)
-	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, float64(p.Up), l...)
+	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, float64(p.Up), append(l, p.State)...)
 	ch <- prometheus.MustNewConstMetric(importCountDesc, prometheus.GaugeValue, float64(p.Imported), l...)
 	ch <- prometheus.MustNewConstMetric(exportCountDesc, prometheus.GaugeValue, float64(p.Exported), l...)
 	ch <- prometheus.MustNewConstMetric(filterCountDesc, prometheus.GaugeValue, float64(p.Filtered), l...)

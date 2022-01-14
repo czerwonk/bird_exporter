@@ -57,7 +57,13 @@ func (m *ospfMetricExporter) describe(ipVersion string, ch chan<- *prometheus.De
 
 func (m *ospfMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric, newFormat bool) {
 	d := m.descriptions[p.IPVersion]
-	ch <- prometheus.MustNewConstMetric(d.runningDesc, prometheus.GaugeValue, p.Attributes["running"], p.Name)
+
+	var running float64
+	if p.State == "Running" {
+		running = 1
+	}
+
+	ch <- prometheus.MustNewConstMetric(d.runningDesc, prometheus.GaugeValue, running, p.Name)
 
 	areas, err := m.client.GetOSPFAreas(p)
 	if err != nil {
