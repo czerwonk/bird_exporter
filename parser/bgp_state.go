@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	nameRegex     *regexp.Regexp
 	bgpStateRegex *regexp.Regexp
 )
 
