@@ -44,7 +44,7 @@ func labelKeysFromDescription(desc string) (res []string) {
 			continue
 		}
 
-		res = append(res, tmp[0])
+		res = append(res, strings.TrimSpace(tmp[0]))
 	}
 
 	return
@@ -57,7 +57,7 @@ func labelValuesFromDescription(desc string) (res []string) {
 			continue
 		}
 
-		res = append(res, tmp[1])
+		res = append(res, strings.TrimSpace(tmp[1]))
 	}
 
 	return
