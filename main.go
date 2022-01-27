@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "1.3.0"
+const version string = "1.4.0"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -28,6 +28,7 @@ var (
 	enableDirect  = flag.Bool("proto.direct", true, "Enables metrics for protocol Direct")
 	enableBabel   = flag.Bool("proto.babel", true, "Enables metrics for protocol Babel")
 	enableRPKI    = flag.Bool("proto.rpki", true, "Enables metrics for protocol RPKI")
+	enableBFD     = flag.Bool("proto.bfd", true, "Enables metrics for protocol BFD")
 	// pre bird 2.0
 	bird6Socket       = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon (not compatible with -bird.v2)")
 	birdEnabled       = flag.Bool("bird.ipv4", true, "Get protocols from bird (not compatible with -bird.v2)")
@@ -121,6 +122,9 @@ func enabledProtocols() protocol.Proto {
 	}
 	if *enableRPKI {
 		res |= protocol.RPKI
+	}
+	if *enableBFD {
+		res |= protocol.BFD
 	}
 
 	return res

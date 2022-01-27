@@ -9,6 +9,7 @@ const (
 	Direct        = Proto(16)
 	Babel         = Proto(32)
 	RPKI          = Proto(64)
+	BFD           = Proto(128)
 )
 
 type Proto int

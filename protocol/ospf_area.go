@@ -1,6 +1,6 @@
 package protocol
 
-type OspfArea struct {
+type OSPFArea struct {
 	Name                  string
 	InterfaceCount        int64
 	NeighborCount         int64

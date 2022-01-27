@@ -41,7 +41,7 @@ func (c *BirdClient) GetProtocols() ([]*protocol.Protocol, error) {
 }
 
 // GetOSPFAreas retrieves OSPF specific information from bird
-func (c *BirdClient) GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.OspfArea, error) {
+func (c *BirdClient) GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.OSPFArea, error) {
 	sock := c.socketFor(protocol.IPVersion)
 	b, err := birdsocket.Query(sock, fmt.Sprintf("show ospf %s", protocol.Name))
 	if err != nil {
@@ -49,6 +49,17 @@ func (c *BirdClient) GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.Ospf
 	}
 
 	return parser.ParseOSPF(b), nil
+}
+
+// GetBFDSessions retrieves BFD specific information from bird
+func (c *BirdClient) GetBFDSessions(protocol *protocol.Protocol) ([]*protocol.BFDSession, error) {
+	sock := c.socketFor(protocol.IPVersion)
+	b, err := birdsocket.Query(sock, fmt.Sprintf("show bfd sessions %s", protocol.Name))
+	if err != nil {
+		return nil, err
+	}
+
+	return parser.ParseBFDSessions(protocol.Name, b), nil
 }
 
 func (c *BirdClient) protocolsFromBird(ipVersions []string) ([]*protocol.Protocol, error) {
