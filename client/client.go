@@ -10,4 +10,7 @@ type Client interface {
 
 	// GetOSPFAreas retrieves OSPF specific information from bird
 	GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.OSPFArea, error)
+
+	// GetBFDSessions retrieves BFD specific information from bird
+	GetBFDSessions(protocol *protocol.Protocol) ([]*protocol.BFDSession, error)
 }

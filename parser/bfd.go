@@ -10,12 +10,10 @@ import (
 )
 
 var (
-	bfdProtocolNameRegex *regexp.Regexp
-	bfdSessionRegex      *regexp.Regexp
+	bfdSessionRegex *regexp.Regexp
 )
 
 func init() {
-	bfdProtocolNameRegex = regexp.MustCompile(`^([^\s]+):$`)
 	bfdSessionRegex = regexp.MustCompile(`^([^\s]+)\s+([^\s]+)\s+(Up|Down)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|[^\s]+)\s+([0-9\.]+)\s+([0-9\.]+)$`)
 }
 
@@ -23,47 +21,26 @@ type bfdContext struct {
 	line     string
 	sessions []*protocol.BFDSession
 	protocol string
-	handled  bool
 }
 
-func ParseBFDSessions(data []byte) []*protocol.BFDSession {
+func ParseBFDSessions(protocolName string, data []byte) []*protocol.BFDSession {
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
 
 	c := &bfdContext{
 		sessions: make([]*protocol.BFDSession, 0),
+		protocol: protocolName,
 	}
 
 	for scanner.Scan() {
 		c.line = strings.TrimSpace(scanner.Text())
-		c.handled = false
-
-		parseBFDProtocolLine(c)
 		parseBFDSessionLine(c)
 	}
 
 	return c.sessions
 }
 
-func parseBFDProtocolLine(c *bfdContext) {
-	if c.handled {
-		return
-	}
-
-	m := bfdProtocolNameRegex.FindStringSubmatch(c.line)
-	if m == nil {
-		return
-	}
-
-	c.protocol = m[1]
-	c.handled = true
-}
-
 func parseBFDSessionLine(c *bfdContext) {
-	if c.handled {
-		return
-	}
-
 	m := bfdSessionRegex.FindStringSubmatch(c.line)
 	if m == nil {
 		return
@@ -83,5 +60,4 @@ func parseBFDSessionLine(c *bfdContext) {
 	}
 
 	c.sessions = append(c.sessions, &sess)
-	c.handled = true
 }

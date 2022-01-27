@@ -12,6 +12,12 @@ var (
 	nowFunc func() time.Time
 )
 
+func init() {
+	nowFunc = func() time.Time {
+		return time.Now()
+	}
+}
+
 func overrideNowFunc(f func() time.Time) {
 	nowFunc = f
 }

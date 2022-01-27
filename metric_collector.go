@@ -56,6 +56,7 @@ func exportersForLegacy(c *client.BirdClient) map[protocol.Proto][]metrics.Metri
 		protocol.Static: {metrics.NewLegacyMetricExporter("static4", "static6", l)},
 		protocol.Babel:  {metrics.NewLegacyMetricExporter("babel4", "babel6", l)},
 		protocol.RPKI:   {metrics.NewLegacyMetricExporter("rpki4", "rpki6", l)},
+		protocol.BFD:    {metrics.NewBFDExporter(c)},
 	}
 }
 
@@ -71,6 +72,7 @@ func exportersForDefault(c *client.BirdClient, descriptionLabels bool) map[proto
 		protocol.Static: {e},
 		protocol.Babel:  {e},
 		protocol.RPKI:   {e},
+		protocol.BFD:    {metrics.NewBFDExporter(c)},
 	}
 }
 

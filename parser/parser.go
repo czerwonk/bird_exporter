@@ -126,6 +126,8 @@ func parseProto(val string) protocol.Proto {
 		return protocol.Babel
 	case "RPKI":
 		return protocol.RPKI
+	case "BFD":
+		return protocol.BFD
 	}
 
 	return protocol.PROTO_UNKNOWN
