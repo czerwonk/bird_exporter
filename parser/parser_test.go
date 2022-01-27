@@ -9,11 +9,12 @@ import (
 )
 
 func TestEstablishedBgpOldTimeFormat(t *testing.T) {
+	overrideNowFunc(func() time.Time {
+		return time.Date(2018, 1, 1, 2, 0, 0, 0, time.UTC)
+	})
+
 	data := "foo    BGP      master   up     1514768400  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
-	s := time.Date(2018, time.January, 1, 1, 0, 0, 0, time.UTC)
-	min := int(time.Since(s).Seconds())
 	p := ParseProtocols([]byte(data), "4")
-	max := int(time.Since(s).Seconds())
 
 	x := p[0]
 	assert.StringEqual("name", "foo", x.Name, t)
@@ -24,7 +25,7 @@ func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	assert.Int64Equal("filtered", 1, x.Filtered, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
 	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
-	assert.That("uptime", "uptime is feasable", func() bool { return x.Uptime >= min && max <= x.Uptime }, t)
+	assert.Int64Equal("uptime", 3600, int64(x.Uptime), t)
 }
 
 func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
@@ -45,11 +46,12 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 }
 
 func TestEstablishedBgpIsoLongTimeFormat(t *testing.T) {
+	overrideNowFunc(func() time.Time {
+		return time.Date(2018, 1, 1, 2, 0, 0, 0, time.Local)
+	})
+
 	data := "foo    BGP      master   up     2018-01-01 01:00:00  Established\ntest\nbar\n  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\nxxx"
-	s := time.Date(2018, time.January, 1, 1, 0, 0, 0, time.UTC)
-	min := int(time.Since(s).Seconds())
 	p := ParseProtocols([]byte(data), "4")
-	max := int(time.Since(s).Seconds())
 
 	assert.IntEqual("protocols", 1, len(p), t)
 
@@ -62,7 +64,7 @@ func TestEstablishedBgpIsoLongTimeFormat(t *testing.T) {
 	assert.Int64Equal("filtered", 1, x.Filtered, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
 	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
-	assert.That("uptime", "uptime is feasable", func() bool { return x.Uptime >= min && max <= x.Uptime }, t)
+	assert.Int64Equal("uptime", 3600, int64(x.Uptime), t)
 }
 
 func TestIpv6BGP(t *testing.T) {

@@ -77,6 +77,6 @@ func parseUptimeForTimestamp(timestamp string) int {
 	since := parseInt(timestamp)
 
 	s := time.Unix(since, 0)
-	d := time.Since(s)
+	d := currentTime().Sub(s)
 	return int(d.Seconds())
 }
