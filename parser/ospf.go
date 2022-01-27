@@ -17,8 +17,8 @@ type ospfRegex struct {
 
 type ospfContext struct {
 	line    string
-	areas   []*protocol.OspfArea
-	current *protocol.OspfArea
+	areas   []*protocol.OSPFArea
+	current *protocol.OSPFArea
 }
 
 func init() {
@@ -30,12 +30,12 @@ func init() {
 
 var ospf *ospfRegex
 
-func ParseOSPF(data []byte) []*protocol.OspfArea {
+func ParseOSPF(data []byte) []*protocol.OSPFArea {
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
 
 	c := &ospfContext{
-		areas: make([]*protocol.OspfArea, 0),
+		areas: make([]*protocol.OSPFArea, 0),
 	}
 
 	for scanner.Scan() {
@@ -53,7 +53,7 @@ func parseLineForOspfArea(c *ospfContext) {
 		return
 	}
 
-	a := &protocol.OspfArea{Name: m[1]}
+	a := &protocol.OSPFArea{Name: m[1]}
 	c.current = a
 	c.areas = append(c.areas, a)
 }

@@ -41,7 +41,7 @@ func (c *BirdClient) GetProtocols() ([]*protocol.Protocol, error) {
 }
 
 // GetOSPFAreas retrieves OSPF specific information from bird
-func (c *BirdClient) GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.OspfArea, error) {
+func (c *BirdClient) GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.OSPFArea, error) {
 	sock := c.socketFor(protocol.IPVersion)
 	b, err := birdsocket.Query(sock, fmt.Sprintf("show ospf %s", protocol.Name))
 	if err != nil {
