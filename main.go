@@ -30,10 +30,11 @@ var (
 	enableRPKI    = flag.Bool("proto.rpki", true, "Enables metrics for protocol RPKI")
 	enableBFD     = flag.Bool("proto.bfd", true, "Enables metrics for protocol BFD")
 	// pre bird 2.0
-	bird6Socket       = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon (not compatible with -bird.v2)")
-	birdEnabled       = flag.Bool("bird.ipv4", true, "Get protocols from bird (not compatible with -bird.v2)")
-	bird6Enabled      = flag.Bool("bird.ipv6", true, "Get protocols from bird6 (not compatible with -bird.v2)")
-	descriptionLabels = flag.Bool("format.description-labels", false, "Add labels from protocol descriptions.")
+	bird6Socket            = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon (not compatible with -bird.v2)")
+	birdEnabled            = flag.Bool("bird.ipv4", true, "Get protocols from bird (not compatible with -bird.v2)")
+	bird6Enabled           = flag.Bool("bird.ipv6", true, "Get protocols from bird6 (not compatible with -bird.v2)")
+	descriptionLabels      = flag.Bool("format.description-labels", false, "Add labels from protocol descriptions.")
+	descriptionLabelsRegex = flag.String("format.description-labels-regex", "(\\w+)=(\\w+)", "Regex to extract labels from protocol description")
 )
 
 func init() {
