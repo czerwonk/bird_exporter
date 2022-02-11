@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/czerwonk/bird_exporter/protocol"
 )
@@ -9,13 +10,13 @@ import (
 // DefaultLabelStrategy defines the labels to add to an metric and its data retrieval method
 type DefaultLabelStrategy struct {
 	descriptionLabels      bool
-	descriptionLabelsRegex string
+	descriptionLabelsRegex *regexp.Regexp
 }
 
 func NewDefaultLabelStrategy(descriptionLabels bool, descriptionLabelsRegex string) *DefaultLabelStrategy {
 	return &DefaultLabelStrategy{
 		descriptionLabels:      descriptionLabels,
-		descriptionLabelsRegex: descriptionLabelsRegex,
+		descriptionLabelsRegex: regexp.MustCompile(descriptionLabelsRegex),
 	}
 }
 
@@ -39,32 +40,26 @@ func (d *DefaultLabelStrategy) LabelValues(p *protocol.Protocol) []string {
 	return res
 }
 
-func labelKeysFromDescription(desc string, d *DefaultLabelStrategy) (res []string) {
-	reAllStringSubmatch := labelFindAllStringSubmatch(desc, d)
-	for _, submatch := range reAllStringSubmatch {
-		res = append(res, submatch[1])
+func labelKeysFromDescription(desc string, d *DefaultLabelStrategy) []string {
+	res := []string{}
+
+	matches := d.descriptionLabelsRegex.FindAllStringSubmatch(desc, -1)
+	for _, submatch := range matches {
+		res = append(res, strings.TrimSpace(submatch[1]))
 	}
 
-	return
+	return res
 }
 
-func labelValuesFromDescription(desc string, d *DefaultLabelStrategy) (res []string) {
-	reAllStringSubmatch := labelFindAllStringSubmatch(desc, d)
-	for _, submatch := range reAllStringSubmatch {
-		res = append(res, submatch[2])
+func labelValuesFromDescription(desc string, d *DefaultLabelStrategy) []string {
+	res := []string{}
+
+	matches := d.descriptionLabelsRegex.FindAllStringSubmatch(desc, -1)
+	for _, submatch := range matches {
+		res = append(res, strings.TrimSpace(submatch[2]))
 	}
 
-	return
-}
-
-func labelFindAllStringSubmatch(desc string, d *DefaultLabelStrategy) (result [][]string) {
-
-	// Regex pattern captures "key: value" pair from the content.
-	pattern := regexp.MustCompile(d.descriptionLabelsRegex)
-
-	result = pattern.FindAllStringSubmatch(desc, -1)
-
-	return
+	return res
 }
 
 func protoString(p *protocol.Protocol) string {
