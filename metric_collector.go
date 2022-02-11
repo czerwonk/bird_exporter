@@ -61,7 +61,7 @@ func exportersForLegacy(c *client.BirdClient) map[protocol.Proto][]metrics.Metri
 }
 
 func exportersForDefault(c *client.BirdClient, descriptionLabels bool) map[protocol.Proto][]metrics.MetricExporter {
-	l := metrics.NewDefaultLabelStrategy(descriptionLabels)
+	l := metrics.NewDefaultLabelStrategy(descriptionLabels, *descriptionLabelsRegex)
 	e := metrics.NewGenericProtocolMetricExporter("bird_protocol", true, l)
 
 	return map[protocol.Proto][]metrics.MetricExporter{
