@@ -7,7 +7,7 @@ require (
 	github.com/czerwonk/testutils v0.0.0-20170526233935-dd9dabe360d4
 	github.com/prometheus/client_golang v1.14.0
 	github.com/sirupsen/logrus v1.9.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 )
 
 require (
