@@ -15,20 +15,23 @@ import (
 const version string = "1.4.1"
 
 var (
-	showVersion   = flag.Bool("version", false, "Print version information.")
-	listenAddress = flag.String("web.listen-address", ":9324", "Address on which to expose metrics and web interface.")
-	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
-	birdSocket    = flag.String("bird.socket", "/var/run/bird.ctl", "Socket to communicate with bird routing daemon")
-	birdV2        = flag.Bool("bird.v2", false, "Bird major version >= 2.0 (multi channel protocols)")
-	newFormat     = flag.Bool("format.new", true, "New metric format (more convenient / generic)")
-	enableBGP     = flag.Bool("proto.bgp", true, "Enables metrics for protocol BGP")
-	enableOSPF    = flag.Bool("proto.ospf", true, "Enables metrics for protocol OSPF")
-	enableKernel  = flag.Bool("proto.kernel", true, "Enables metrics for protocol Kernel")
-	enableStatic  = flag.Bool("proto.static", true, "Enables metrics for protocol Static")
-	enableDirect  = flag.Bool("proto.direct", true, "Enables metrics for protocol Direct")
-	enableBabel   = flag.Bool("proto.babel", true, "Enables metrics for protocol Babel")
-	enableRPKI    = flag.Bool("proto.rpki", true, "Enables metrics for protocol RPKI")
-	enableBFD     = flag.Bool("proto.bfd", true, "Enables metrics for protocol BFD")
+	showVersion      = flag.Bool("version", false, "Print version information.")
+	listenAddress    = flag.String("web.listen-address", ":9324", "Address on which to expose metrics and web interface.")
+	metricsPath      = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
+	birdSocket       = flag.String("bird.socket", "/var/run/bird.ctl", "Socket to communicate with bird routing daemon")
+	birdV2           = flag.Bool("bird.v2", false, "Bird major version >= 2.0 (multi channel protocols)")
+	tlsEnabled       = flag.Bool("tls.enabled", false, "Enables TLS")
+	tlsCertChainPath = flag.String("tls.cert-file", "", "Path to TLS cert file")
+	tlsKeyPath       = flag.String("tls.key-file", "", "Path to TLS key file")
+	newFormat        = flag.Bool("format.new", true, "New metric format (more convenient / generic)")
+	enableBGP        = flag.Bool("proto.bgp", true, "Enables metrics for protocol BGP")
+	enableOSPF       = flag.Bool("proto.ospf", true, "Enables metrics for protocol OSPF")
+	enableKernel     = flag.Bool("proto.kernel", true, "Enables metrics for protocol Kernel")
+	enableStatic     = flag.Bool("proto.static", true, "Enables metrics for protocol Static")
+	enableDirect     = flag.Bool("proto.direct", true, "Enables metrics for protocol Direct")
+	enableBabel      = flag.Bool("proto.babel", true, "Enables metrics for protocol Babel")
+	enableRPKI       = flag.Bool("proto.rpki", true, "Enables metrics for protocol RPKI")
+	enableBFD        = flag.Bool("proto.bfd", true, "Enables metrics for protocol BFD")
 	// pre bird 2.0
 	bird6Socket            = flag.String("bird.socket6", "/var/run/bird6.ctl", "Socket to communicate with bird6 routing daemon (not compatible with -bird.v2)")
 	birdEnabled            = flag.Bool("bird.ipv4", true, "Get protocols from bird (not compatible with -bird.v2)")
@@ -64,7 +67,7 @@ func printVersion() {
 }
 
 func startServer() {
-	log.Infof("Starting bird exporter (Version: %s)\n", version)
+	log.Infof("Starting bird exporter (Version: %s)", version)
 
 	if !*newFormat {
 		log.Info("INFO: You are using the old metric format. Please consider using the new (more convenient one) by setting -format.new=true.")
@@ -83,7 +86,12 @@ func startServer() {
 	})
 	http.HandleFunc(*metricsPath, handleMetricsRequest)
 
-	log.Infof("Listening for %s on %s\n", *metricsPath, *listenAddress)
+	log.Infof("Listening for %s on %s (TLS: %v)", *metricsPath, *listenAddress, *tlsEnabled)
+	if *tlsEnabled {
+		log.Fatal(http.ListenAndServeTLS(*listenAddress, *tlsCertChainPath, *tlsKeyPath, nil))
+		return
+	}
+
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
 
