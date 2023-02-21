@@ -1,0 +1,24 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "bird-exporter.fullname" . }}
+spec:
+  jobLabel: {{ .Values.serviceMonitor.jobLabel | quote }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "bird-exporter.labels" . | nindent 6 }}
+  endpoints:
+  - port: http-metrics
+    {{- if .Values.serviceMonitor.metricRelabelings }}
+    metricRelabelings:
+      {{- toYaml .Values.serviceMonitor.metricRelabelings | nindent 6 }}
+    {{- end }}
+    {{- if .Values.serviceMonitor.relabelings }}
+    relabelings:
+      {{- toYaml .Values.serviceMonitor.relabelings | nindent 6 }}
+    {{- end }}
+{{- end }}
