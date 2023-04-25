@@ -14,7 +14,7 @@ var (
 )
 
 func init() {
-	bfdSessionRegex = regexp.MustCompile(`^([^\s]+)\s+([^\s]+)\s+(Up|Down)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|[^\s]+)\s+([0-9\.]+)\s+([0-9\.]+)$`)
+	bfdSessionRegex = regexp.MustCompile(`^([^\s]+)\s+([^\s]+)\s+(Up|Down|Init)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|[^\s]+)\s+([0-9\.]+)\s+([0-9\.]+)$`)
 }
 
 type bfdContext struct {
