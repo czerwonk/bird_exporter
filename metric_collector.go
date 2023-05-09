@@ -76,7 +76,17 @@ func exportersForDefault(c *client.BirdClient, descriptionLabels bool) map[proto
 	}
 }
 
+var socketQueryDesc = prometheus.NewDesc(
+	"bird_socket_query_success",
+	"Result of querying bird socket: 0 = failed, 1 = suceeded",
+	nil,
+	nil,
+)
+
 func (m *MetricCollector) Describe(ch chan<- *prometheus.Desc) {
+
+	ch <- socketQueryDesc
+
 	for _, v := range m.exporters {
 		for _, e := range v {
 			e.Describe(ch)
@@ -85,7 +95,15 @@ func (m *MetricCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (m *MetricCollector) Collect(ch chan<- prometheus.Metric) {
+
 	protocols, err := m.client.GetProtocols()
+
+	var queryResult float64 = 1
+	if err != nil {
+		queryResult = 0
+	}
+	ch <- prometheus.MustNewConstMetric(socketQueryDesc, prometheus.GaugeValue, queryResult)
+
 	if err != nil {
 		log.Errorln(err)
 		return
