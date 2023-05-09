@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "bird-exporter.fullname" . }}-metrics
+  labels:
+    {{- include "bird-exporter.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - targetPort: http-metrics
+      protocol: TCP
+      port: 9324
+      name: http-metrics
+  selector:
+    {{- include "bird-exporter.selectorLabels" . | nindent 4 }}

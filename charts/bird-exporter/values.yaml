@@ -1,0 +1,59 @@
+image:
+  repository: czerwonk/bird_exporter
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+exporter:
+  args:
+    - "-format.new=true"
+    - "-bird.socket=/var/run/bird/bird.ctl"
+    - "-bird.socket6=/var/run/bird/bird6.ctl"
+  # Host path of where the bird socket is.
+  # This path will then be mounted into /var/run/bird in the container.
+  birdSocketPath: "/var/run/bird"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceMonitor:
+  enabled: false
+  jobLabel: "app.kubernetes.io/name"
+
+  metricRelabelings: []
+  # - action: keep
+  #   regex: 'bird_.+'
+  #   sourceLabels: [__name__]
+
+  relabelings: []
+  # - action: replace
+  #   sourceLabels: [__meta_kubernetes_pod_node_name]
+  #   targetLabel: nodename
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 2000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 32Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 32Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
