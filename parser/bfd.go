@@ -46,9 +46,7 @@ func parseBFDSessionLine(c *bfdContext) {
 		return
 	}
 	var since_epoch int64
-	if m[5] == "" {
-		since_epoch = 0
-	} else {
+	if m[5] != "" {
 		since_epoch = parseInt(m[5])
 	}
 
