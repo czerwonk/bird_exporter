@@ -14,7 +14,7 @@ var (
 )
 
 func init() {
-	bfdSessionRegex = regexp.MustCompile(`^([^\s]+)\s+([^\s]+)\s+(Up|Down|Init)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|[^\s]+)\s+([0-9\.]+)\s+([0-9\.]+)$`)
+	bfdSessionRegex = regexp.MustCompile(`^([^\s]+)\s+([^\s]+)\s+(Up|Down|Init)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|[^\s]+)\s+(\d{1,})?\s+([0-9\.]+)\s+([0-9\.]+)$`)
 }
 
 type bfdContext struct {
@@ -45,14 +45,21 @@ func parseBFDSessionLine(c *bfdContext) {
 	if m == nil {
 		return
 	}
+	var since_epoch int64
+	if m[5] == "" {
+		since_epoch = 0
+	} else {
+		since_epoch = parseInt(m[5])
+	}
 
 	sess := protocol.BFDSession{
 		ProtocolName: c.protocol,
 		IP:           m[1],
 		Interface:    m[2],
 		Since:        parseUptime(m[4]),
-		Interval:     parseFloat(m[5]),
-		Timeout:      parseFloat(m[6]),
+		SinceEpoch:   since_epoch,
+		Interval:     parseFloat(m[6]),
+		Timeout:      parseFloat(m[7]),
 	}
 
 	if m[3] == "Up" {

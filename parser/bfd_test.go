@@ -16,7 +16,7 @@ func TestParseBFDSessions(t *testing.T) {
 	data := `BIRD 2.0.7 ready.
 bfd1:
 IP address                Interface  State      Since         Interval  Timeout
-192.168.64.9              enp0s2     Up         2022-01-27 09:00:00    0.100    1.000
+192.168.64.9              enp0s2     Up         2022-01-27 09:00:00 1697620076    0.100    1.000
 192.168.64.10             enp0s2     Down       2022-01-27 08:00:00    0.300    0.000
 192.168.64.12             enp0s2     Init       2022-01-27 08:00:00    0.300    5.000`
 
@@ -30,6 +30,7 @@ IP address                Interface  State      Since         Interval  Timeout
 		Interface:    "enp0s2",
 		Up:           true,
 		Since:        3600,
+		SinceEpoch:   1697620076,
 		Interval:     0.1,
 		Timeout:      1,
 	}
@@ -39,6 +40,7 @@ IP address                Interface  State      Since         Interval  Timeout
 		Interface:    "enp0s2",
 		Up:           false,
 		Since:        7200,
+		SinceEpoch:   0,
 		Interval:     0.3,
 		Timeout:      0,
 	}
@@ -48,6 +50,7 @@ IP address                Interface  State      Since         Interval  Timeout
 		Interface:    "enp0s2",
 		Up:           false,
 		Since:        7200,
+		SinceEpoch:   0,
 		Interval:     0.3,
 		Timeout:      5,
 	}

@@ -6,6 +6,7 @@ type BFDSession struct {
 	Interface    string
 	Up           bool
 	Since        int
+	SinceEpoch   int64
 	Interval     float64
 	Timeout      float64
 }
