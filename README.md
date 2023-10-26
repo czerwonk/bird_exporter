@@ -63,7 +63,7 @@ bird_exporter -format.new=true
 ## BIRD RS Dashboard
 this sample dashboard was created by [openbsod](https://github.com/openbsod). Thanks for contributing!
 
-https://grafana.com/dashboards/5259
+[https://grafana.com/grafana/dashboards/5259-bird-rs/](https://grafana.com/grafana/dashboards/5259-bird-rs/)
 
 ![alt text](https://github.com/czerwonk/bird_exporter/blob/master/grafana/img/bird_exporter.png)
 
