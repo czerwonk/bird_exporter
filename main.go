@@ -73,7 +73,7 @@ func startServer() {
 		log.Info("INFO: You are using the old metric format. Please consider using the new (more convenient one) by setting -format.new=true.")
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>Bird Routing Daemon Exporter (Version ` + version + `)</title></head>
 			<body>
@@ -105,7 +105,8 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	l.Level = log.ErrorLevel
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
 		ErrorLog:      l,
-		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
+		ErrorHandling: promhttp.ContinueOnError,
+	}).ServeHTTP(w, r)
 }
 
 func enabledProtocols() protocol.Proto {
