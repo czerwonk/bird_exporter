@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/czerwonk/bird_socket v0.0.0-20230831050638-df62ae583e1d
 	github.com/czerwonk/testutils v0.0.0-20170526233935-dd9dabe360d4
-	github.com/prometheus/client_golang v1.20.2
+	github.com/prometheus/client_golang v1.20.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.9.0
 )
