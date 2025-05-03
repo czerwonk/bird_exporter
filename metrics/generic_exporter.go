@@ -30,7 +30,6 @@ func (m *GenericProtocolMetricExporter) Export(p *protocol.Protocol, ch chan<- p
 	var importCountDesc *prometheus.Desc
 	var exportCountDesc *prometheus.Desc
 	var filterCountDesc *prometheus.Desc
-	var preferredCountDesc *prometheus.Desc
 
 	upDesc := prometheus.NewDesc(m.prefix+"_up", "Protocol is up", append(labels, "state"), nil)
 
@@ -38,12 +37,10 @@ func (m *GenericProtocolMetricExporter) Export(p *protocol.Protocol, ch chan<- p
 		importCountDesc = prometheus.NewDesc(m.prefix+"_prefix_import_count", "Number of imported routes", labels, nil)
 		exportCountDesc = prometheus.NewDesc(m.prefix+"_prefix_export_count", "Number of exported routes", labels, nil)
 		filterCountDesc = prometheus.NewDesc(m.prefix+"_prefix_filter_count", "Number of filtered routes", labels, nil)
-		preferredCountDesc = prometheus.NewDesc(m.prefix+"_prefix_preferred_count", "Number of preferred routes", labels, nil)
 	} else {
 		importCountDesc = prometheus.NewDesc(m.prefix+"_prefix_count_import", "Number of imported routes", labels, nil)
 		exportCountDesc = prometheus.NewDesc(m.prefix+"_prefix_count_export", "Number of exported routes", labels, nil)
 		filterCountDesc = prometheus.NewDesc(m.prefix+"_prefix_count_filter", "Number of filtered routes", labels, nil)
-		preferredCountDesc = prometheus.NewDesc(m.prefix+"_prefix_count_preferred", "Number of preferred routes", labels, nil)
 	}
 
 	uptimeDesc := prometheus.NewDesc(m.prefix+"_uptime", "Uptime of the protocol in seconds", labels, nil)
@@ -73,7 +70,6 @@ func (m *GenericProtocolMetricExporter) Export(p *protocol.Protocol, ch chan<- p
 	ch <- prometheus.MustNewConstMetric(importCountDesc, prometheus.GaugeValue, float64(p.Imported), l...)
 	ch <- prometheus.MustNewConstMetric(exportCountDesc, prometheus.GaugeValue, float64(p.Exported), l...)
 	ch <- prometheus.MustNewConstMetric(filterCountDesc, prometheus.GaugeValue, float64(p.Filtered), l...)
-	ch <- prometheus.MustNewConstMetric(preferredCountDesc, prometheus.GaugeValue, float64(p.Preferred), l...)
 	ch <- prometheus.MustNewConstMetric(uptimeDesc, prometheus.GaugeValue, float64(p.Uptime), l...)
 	ch <- prometheus.MustNewConstMetric(updatesImportReceiveCountDesc, prometheus.GaugeValue, float64(p.ImportUpdates.Received), l...)
 	ch <- prometheus.MustNewConstMetric(updatesImportRejectCountDesc, prometheus.GaugeValue, float64(p.ImportUpdates.Rejected), l...)
