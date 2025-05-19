@@ -1,9 +1,9 @@
 module github.com/czerwonk/bird_exporter
 
-go 1.24
+go 1.24.3
 
 require (
-	github.com/czerwonk/bird_socket v0.0.0-20230831050638-df62ae583e1d
+	github.com/czerwonk/bird_socket v1.0.0
 	github.com/czerwonk/testutils v0.0.0-20170526233935-dd9dabe360d4
 	github.com/prometheus/client_golang v1.22.0
 	github.com/sirupsen/logrus v1.9.3

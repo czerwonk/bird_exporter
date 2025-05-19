@@ -3,8 +3,8 @@ github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6r
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/czerwonk/bird_socket v0.0.0-20230831050638-df62ae583e1d h1:hQfQ1u/yusVR8zB7MiYvRL5BY8wlzNCTkahfYAAvd2Q=
-github.com/czerwonk/bird_socket v0.0.0-20230831050638-df62ae583e1d/go.mod h1:SQ2xpIC3W7ygMomUYEsxXBeun7RML/HCNXj24fbz+XI=
+github.com/czerwonk/bird_socket v1.0.0 h1:L/Mowkv8PnCn86QNE7+lB/MkhoCDER2e6ypYWr7f3eA=
+github.com/czerwonk/bird_socket v1.0.0/go.mod h1:SBVKLeHspFmvzrX+9xad/z0/eVvfdtdsS/pTFhjl9e8=
 github.com/czerwonk/testutils v0.0.0-20170526233935-dd9dabe360d4 h1:1QQjuJMb2LVM/sk4HS7svnGjM8um7EWk8lD5BwZ2X28=
 github.com/czerwonk/testutils v0.0.0-20170526233935-dd9dabe360d4/go.mod h1:Xibh2UDW2TbNjbi8QON4p0QxiYK/RM5USagAW7J3jUM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
