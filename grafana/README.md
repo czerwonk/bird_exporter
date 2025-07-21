@@ -1,7 +1,5 @@
 ## BIRD Grafana Dashboard
 
-## BIRD Grafana Dashboard
-
 There are three dashboards for this exporter. One is a more general RS dashboard, and two more advanced dashboards that focus primarily on **BGP** and **OSPF & BFD** protocols.
 
 All three of them are available in the dashboards folder. Just copy the JSON file and import it into your Grafana instance.
