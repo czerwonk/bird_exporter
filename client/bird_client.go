@@ -94,3 +94,13 @@ func (c *BirdClient) socketFor(ipVersion string) string {
 
 	return c.Options.BirdSocket
 }
+
+// StatusFromSocket retrieves status information from bird
+func (c *BirdClient) StatusFromSocket(socketPath string) (*parser.Status, error) {
+	b, err := birdsocket.Query(socketPath, "show status")
+	if err != nil {
+		return nil, err
+	}
+
+	return parser.ParseStatus(b), nil
+}
