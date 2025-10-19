@@ -13,8 +13,8 @@ import (
 func ParseExportedRoutes(data []byte) (rList []routes.Route, err error) {
 	tablePrefix := regexp.MustCompile(`^(1007\-Table) (\w+?)\:`)
 	routePrefix := regexp.MustCompile(`^ *(\d+\.\d+\.\d+\.\d+)\/(\d+) +(.+)`)
-	routePostfix := regexp.MustCompile(`^(\w+) \[(.+?) +(.+?)\] +(\*? +)\((\d+)\)`)
-	viaPrefix := regexp.MustCompile(`^ +\tvia (\d+\.\d+\.\d+\.\d+) on (\w+?)$`)
+	routePostfix := regexp.MustCompile(`^(\w+) \[(.+?) +(.+?)\] +(\*? +)\((\d+)\)(?: \[(.+)\])?`)
+	viaPrefix := regexp.MustCompile(`^ +\tvia (\d+\.\d+\.\d+\.\d+) on (\w+?)(?: weight (\d+))?$`)
 	devPrefix := regexp.MustCompile(`^ +\tdev (\w+?)$`)
 
 	var tName string
@@ -59,6 +59,11 @@ func ParseExportedRoutes(data []byte) (rList []routes.Route, err error) {
 				if v, e := strconv.ParseInt(m2[5], 10, 16); e == nil {
 					rtt.Metric = int(v)
 				}
+
+				if len(m2) > 6 {
+					// AS is specified
+					rtt.LastAS = m2[6]
+				}
 			}
 			continue
 		}
@@ -74,14 +79,36 @@ func ParseExportedRoutes(data []byte) (rList []routes.Route, err error) {
 				rtt.Metric = int(v)
 			}
 
+			if len(m2) > 6 {
+				// AS is specified
+				rtt.LastAS = m2[6]
+			}
+
 			continue
 		}
 
 		if m := viaPrefix.FindStringSubmatch(line); m != nil {
-			rtt.Via = m[1]
-			rtt.Dev = m[2]
-			rt.Targets = append(rt.Targets, rtt)
-			rtt = routes.RouteTarget{}
+			rtv := routes.RouteVia{
+				Via: m[1],
+				Dev: m[2],
+			}
+			if len(m) > 3 {
+				if v, e := strconv.ParseInt(m[3], 10, 16); e == nil {
+					rtv.Weight = int(v)
+				}
+			}
+
+			// Process ECMP multiple via
+			if rtt.RouteType == "" {
+				// Check correct data
+				if len(rt.Targets) > 0 && len(rt.Targets[len(rt.Targets)-1].Via) > 0 {
+					rt.Targets[len(rt.Targets)-1].Via = append(rt.Targets[len(rt.Targets)-1].Via, rtv)
+				}
+			} else {
+				rtt.Via = append(rtt.Via, rtv)
+				rt.Targets = append(rt.Targets, rtt)
+				rtt = routes.RouteTarget{}
+			}
 			continue
 		}
 

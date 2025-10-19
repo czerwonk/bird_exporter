@@ -99,15 +99,17 @@ func (m *MetricCollector) Collect(ch chan<- prometheus.Metric) {
 	protocols, err := m.client.GetProtocols()
 
 	if err == nil {
-		for _, p := range protocols {
-			if p.Proto == protocol.BGP {
+		for idx, p := range protocols {
+			// if p.Proto == protocol.BGP {
+			if true {
 				// TODO
 				// fmt.Println("bgp peer: ", p.Name)
 				er, _ := m.client.GetExportedRoutes(p.Name)
+				protocols[idx].ExportedRoutes = er
 				for _, r := range er {
 					// TODO: Implement export
 					_ = r
-					//fmt.Println(r)
+					// fmt.Println(r)
 				}
 			}
 		}
