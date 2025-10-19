@@ -293,3 +293,23 @@ func TestRPKIUp(t *testing.T) {
 	assert.StringEqual("state", "Established", x.State, t)
 	assert.IntEqual("up", 1, x.Up, t)
 }
+
+func TestExportedRoutesViaBGP(t *testing.T) {
+	data := "1007-Table master4:\n 0.0.0.0/0            unicast [ix-m3-sm10-leaf05 2025-10-15] * (100) [AS201706i]\n \tvia 10.181.40.7 on left\n 10.181.212.11/32     unicast [direct1 2025-10-15] * (240)\n \tdev lo\n0000"
+
+	p, err := ParseExportedRoutes([]byte(data))
+	assert.True("error is nil", err == nil, t)
+	assert.True("found 2 routes", len(p) == 2, t)
+
+	r := p[0]
+	assert.StringEqual("Table", "master4", r.Table, t)
+	assert.StringEqual("Prefix", "0.0.0.0", r.Prefix, t)
+	assert.StringEqual("NetLen", "0", r.NetLen, t)
+	assert.True("found 1 target", len(r.Targets) == 1, t)
+	rt := r.Targets[0]
+	assert.StringEqual("RouteType", "unicast", rt.RouteType, t)
+	assert.StringEqual("RouteService", "ix-m3-sm10-leaf05", rt.RouteSource, t)
+	assert.StringEqual("FirstSeen", "2025-10-15", rt.FirstSeen, t)
+	assert.StringEqual("Dev", "left", rt.Dev, t)
+	assert.StringEqual("Via", "10.181.40.7", rt.Via, t)
+}
