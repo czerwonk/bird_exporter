@@ -87,3 +87,7 @@ func protoString(p *protocol.Protocol) string {
 
 	return ""
 }
+
+func ProtoString(p *protocol.Protocol) string {
+	return protoString(p)
+}
