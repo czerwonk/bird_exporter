@@ -95,4 +95,17 @@ func (m *GenericProtocolMetricExporter) Export(p *protocol.Protocol, ch chan<- p
 	ch <- prometheus.MustNewConstMetric(withdrawsExportFilterCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Filtered), l...)
 	ch <- prometheus.MustNewConstMetric(withdrawsExportAcceptCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Accepted), l...)
 	ch <- prometheus.MustNewConstMetric(withdrawsExportIgnoreCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Ignored), l...)
+
+	exportedRoutes := prometheus.NewDesc(m.prefix+"_exported_routes", "Exported routes", []string{"name", "proto", "ip_version", "prefix", "route_source"}, nil)
+	for _, r := range p.ExportedRoutes {
+		if len(r.Targets) > 0 {
+			vals := []string{p.Name, protoString(p), p.IPVersion, r.Prefix + "/" + r.NetLen, r.Targets[0].RouteSource}
+			v := 1
+			if len(r.Targets[0].Via) > 0 {
+				v = len(r.Targets[0].Via)
+			}
+			ch <- prometheus.MustNewConstMetric(exportedRoutes, prometheus.GaugeValue, float64(v), vals...)
+		}
+	}
+
 }
