@@ -8,7 +8,7 @@ require (
 	github.com/czerwonk/bird_socket v1.0.0
 	github.com/czerwonk/testutils v0.0.0-20170526233935-dd9dabe360d4
 	github.com/prometheus/client_golang v1.23.2
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
 )
 
