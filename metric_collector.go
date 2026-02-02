@@ -13,9 +13,10 @@ type MetricCollector struct {
 	client           *client.BirdClient
 	enabledProtocols protocol.Proto
 	newFormat        bool
+	status           *metrics.StatusExporter
 }
 
-func NewMetricCollector(newFormat bool, enabledProtocols protocol.Proto, descriptionLabels bool) *MetricCollector {
+func NewMetricCollector(newFormat bool, enabledProtocols protocol.Proto, descriptionLabels bool, socketPath string) *MetricCollector {
 	c := getClient()
 	var e map[protocol.Proto][]metrics.MetricExporter
 
@@ -30,6 +31,7 @@ func NewMetricCollector(newFormat bool, enabledProtocols protocol.Proto, descrip
 		client:           c,
 		enabledProtocols: enabledProtocols,
 		newFormat:        newFormat,
+		status:           metrics.NewStatusExporter(c, socketPath),
 	}
 }
 
@@ -92,6 +94,9 @@ func (m *MetricCollector) Describe(ch chan<- *prometheus.Desc) {
 			e.Describe(ch)
 		}
 	}
+	if m.status != nil {
+		m.status.Describe(ch)
+	}
 }
 
 func (m *MetricCollector) Collect(ch chan<- prometheus.Metric) {
@@ -117,5 +122,9 @@ func (m *MetricCollector) Collect(ch chan<- prometheus.Metric) {
 		for _, e := range m.exporters[p.Proto] {
 			e.Export(p, ch, m.newFormat)
 		}
+	}
+
+	if m.status != nil {
+		m.status.Collect(ch)
 	}
 }

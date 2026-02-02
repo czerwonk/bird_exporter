@@ -98,7 +98,7 @@ func startServer() {
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	reg := prometheus.NewRegistry()
 	p := enabledProtocols()
-	c := NewMetricCollector(*newFormat, p, *descriptionLabels)
+	c := NewMetricCollector(*newFormat, p, *descriptionLabels, *birdSocket)
 	reg.MustRegister(c)
 
 	l := log.New()
