@@ -60,12 +60,9 @@ go get -u github.com/czerwonk/bird_exporter
 bird_exporter -format.new=true
 ```
 
-## BIRD RS Dashboard
-this sample dashboard was created by [openbsod](https://github.com/openbsod). Thanks for contributing!
+## BIRD Grafana Dashboard
 
-[https://grafana.com/grafana/dashboards/5259-bird-rs/](https://grafana.com/grafana/dashboards/5259-bird-rs/)
-
-![alt text](https://github.com/czerwonk/bird_exporter/blob/master/grafana/img/bird_exporter.png)
+There are three Grafana dashboards available for this exporter. Check the [grafana](https://github.com/czerwonk/bird_exporter/tree/main/grafana) for more.
 
 ## Features
 * BGP session state
