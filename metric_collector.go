@@ -1,6 +1,9 @@
 package main
 
 import (
+	"regexp"
+	"strings"
+
 	"github.com/czerwonk/bird_exporter/client"
 	"github.com/czerwonk/bird_exporter/metrics"
 	"github.com/czerwonk/bird_exporter/protocol"
@@ -98,6 +101,15 @@ func (m *MetricCollector) Collect(ch chan<- prometheus.Metric) {
 
 	protocols, err := m.client.GetProtocols()
 
+	if err == nil {
+		for idx, p := range protocols {
+			if m.IsExportedRoutes(p) {
+				er, _ := m.client.GetExportedRoutes(p.Name)
+				protocols[idx].ExportedRoutes = er
+			}
+		}
+	}
+
 	var queryResult float64 = 1
 	if err != nil {
 		queryResult = 0
@@ -118,4 +130,23 @@ func (m *MetricCollector) Collect(ch chan<- prometheus.Metric) {
 			e.Export(p, ch, m.newFormat)
 		}
 	}
+}
+
+func (m *MetricCollector) IsExportedRoutes(p *protocol.Protocol) bool {
+	exportNames := regexp.MustCompile(`\s*,\s*`).Split(*routeExportName, -1)
+	exportProtos := regexp.MustCompile(`\s*,\s*`).Split(*routeExportProto, -1)
+
+	for _, v := range exportNames {
+		if strings.ToLower(v) == strings.ToLower(p.Name) {
+			return true
+		}
+	}
+
+	for _, v := range exportProtos {
+		if strings.ToLower(v) == strings.ToLower(metrics.ProtoString(p)) {
+			return true
+		}
+	}
+
+	return false
 }

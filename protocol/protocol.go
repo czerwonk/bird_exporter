@@ -1,5 +1,7 @@
 package protocol
 
+import "github.com/czerwonk/bird_exporter/routes"
+
 const (
 	PROTO_UNKNOWN = Proto(0)
 	BGP           = Proto(1)
@@ -32,6 +34,7 @@ type Protocol struct {
 	ImportWithdraws RouteChangeCount
 	ExportUpdates   RouteChangeCount
 	ExportWithdraws RouteChangeCount
+	ExportedRoutes  []routes.Route
 }
 
 type RouteChangeCount struct {

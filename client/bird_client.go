@@ -5,6 +5,7 @@ import (
 
 	"github.com/czerwonk/bird_exporter/parser"
 	"github.com/czerwonk/bird_exporter/protocol"
+	"github.com/czerwonk/bird_exporter/routes"
 	birdsocket "github.com/czerwonk/bird_socket"
 )
 
@@ -93,4 +94,18 @@ func (c *BirdClient) socketFor(ipVersion string) string {
 	}
 
 	return c.Options.BirdSocket
+}
+
+// GetExportedRoutes retrieves protocol information and statistics from bird
+func (c *BirdClient) GetExportedRoutes(p string) (routes []routes.Route, err error) {
+	sock := c.socketFor("4")
+	return c.exportedRoutesFromSocket(sock, p)
+}
+
+func (c *BirdClient) exportedRoutesFromSocket(socketPath string, p string) (routes []routes.Route, err error) {
+	b, err := birdsocket.Query(socketPath, "show route export '"+p+"'")
+	if err != nil {
+		return routes, err
+	}
+	return parser.ParseExportedRoutes(b)
 }
