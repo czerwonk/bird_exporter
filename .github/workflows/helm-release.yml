@@ -33,7 +33,7 @@ jobs:
       - name: Package Helm chart
         run: |
           mkdir -p .charts-tmp
-          helm package /charts/bird-exporter -d .charts-tmp
+          helm package charts/bird-exporter -d .charts-tmp
 
       - name: Checkout gh-pages branch
         uses: actions/checkout@v4
