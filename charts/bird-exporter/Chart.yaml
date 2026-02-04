@@ -2,7 +2,7 @@ apiVersion: v2
 name: bird-exporter
 description: Exporter for bird-exporter
 type: application
-version: 0.1.2
+version: 0.1.3
 appVersion: "1.4.5"
 sources:
   - https://github.com/czerwonk/bird-exporter
