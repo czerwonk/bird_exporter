@@ -282,6 +282,22 @@ func TestOSPFCurrentTimeFormat(t *testing.T) {
 	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
 
+func TestOSPFIsoMsecTimeFormat(t *testing.T) {
+	data := "ospf1    OSPF      master   up     2017-12-31 22:16:29.765  Running\ntest\nbar\n  Routes:         12 imported, 34 exported, 100 preferred\nxxx"
+	p := ParseProtocols([]byte(data), "4")
+	assert.IntEqual("protocols", 1, len(p), t)
+
+	x := p[0]
+	assert.StringEqual("name", "ospf1", x.Name, t)
+	assert.IntEqual("proto", int(protocol.OSPF), int(x.Proto), t)
+	assert.IntEqual("up", 1, x.Up, t)
+	assert.Int64Equal("imported", 12, x.Imported, t)
+	assert.Int64Equal("exported", 34, x.Exported, t)
+	assert.Int64Equal("preferred", 100, x.Preferred, t)
+	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
+	assert.IntEqual("uptime", 13410, x.Uptime, t)
+}
+
 func TestRPKIUp(t *testing.T) {
 	data := "rpki1      RPKI       ---        up     2021-12-31 13:04:29  Established"
 	p := ParseProtocols([]byte(data), "4")
