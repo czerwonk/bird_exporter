@@ -11,13 +11,14 @@ import (
 )
 
 var (
-	protocolRegex    *regexp.Regexp
-	descriptionRegex *regexp.Regexp
-	routeRegex       *regexp.Regexp
-	uptimeRegex      *regexp.Regexp
-	routeChangeRegex *regexp.Regexp
-	filterRegex      *regexp.Regexp
-	channelRegex     *regexp.Regexp
+	protocolRegex    		*regexp.Regexp
+	descriptionRegex 		*regexp.Regexp
+	routeRegex       		*regexp.Regexp
+	uptimeRegex      		*regexp.Regexp
+	routeChangeRegexLegacy 	*regexp.Regexp
+	routeChangeRegexV3     	*regexp.Regexp
+	filterRegex      		*regexp.Regexp
+	channelRegex     		*regexp.Regexp
 )
 
 type context struct {
@@ -33,7 +34,8 @@ func init() {
 	descriptionRegex = regexp.MustCompile(`Description:\s+(.*)`)
 	routeRegex = regexp.MustCompile(`^\s+Routes:\s+(\d+) imported, (?:(\d+) filtered, )?(\d+) exported(?:, (\d+) preferred)?`)
 	uptimeRegex = regexp.MustCompile(`^(?:((\d+):(\d{2}):(\d{2}))|(\d+)|(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:|\.\d+)))$`)
-	routeChangeRegex = regexp.MustCompile(`(Import|Export) (updates|withdraws):\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s*`)
+	routeChangeRegexLegacy = regexp.MustCompile(`(Import|Export) (updates|withdraws):\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s*`)
+	routeChangeRegexV3 = regexp.MustCompile(`(Import|Export) (updates|withdraws):\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)`)
 	filterRegex = regexp.MustCompile(`(Input|Output) filter:\s+(.*)`)
 	channelRegex = regexp.MustCompile(`Channel ipv(4|6)`)
 }
@@ -172,11 +174,12 @@ func parseLineForChannel(c *context) {
 		c.current.IPVersion = channel[1]
 	} else {
 		c.current = &protocol.Protocol{
-			Name:      c.current.Name,
-			Proto:     c.current.Proto,
-			Up:        c.current.Up,
-			Uptime:    c.current.Uptime,
-			IPVersion: channel[1],
+			Name:               	c.current.Name,
+			Proto:              	c.current.Proto,
+			Up:                 	c.current.Up,
+			Uptime:             	c.current.Uptime,
+			IPVersion:          	channel[1],
+			RouteChangeFormatV3: 	c.current.RouteChangeFormatV3,
 		}
 		c.protocols = append(c.protocols, c.current)
 	}
@@ -213,19 +216,39 @@ func parseLineForRouteChanges(c *context) {
 		return
 	}
 
-	match := routeChangeRegex.FindStringSubmatch(c.line)
-	if match == nil {
+	match := routeChangeRegexV3.FindStringSubmatch(c.line)
+	if match != nil {
+		x := getRouteChangeCount(match, c.current)
+		x.Received = parseRouteChangeValue(match[3])
+		x.Rejected = parseRouteChangeValue(match[4])
+		x.Filtered = parseRouteChangeValue(match[5])
+		x.Ignored = parseRouteChangeValue(match[6])
+		x.RxLimit = parseRouteChangeValue(match[7])
+		x.Limit = parseRouteChangeValue(match[8])
+		x.Accepted = parseRouteChangeValue(match[9])
+
+		c.current.RouteChangeFormatV3 = true
+		c.handled = true
 		return
 	}
 
-	x := getRouteChangeCount(match, c.current)
-	x.Received = parseRouteChangeValue(match[3])
-	x.Rejected = parseRouteChangeValue(match[4])
-	x.Filtered = parseRouteChangeValue(match[5])
-	x.Ignored = parseRouteChangeValue(match[6])
-	x.Accepted = parseRouteChangeValue(match[7])
+	match = routeChangeRegexLegacy.FindStringSubmatch(c.line)
+	if match != nil {
+		x := getRouteChangeCount(match, c.current)
+		x.Received = parseRouteChangeValue(match[3])
+		x.Rejected = parseRouteChangeValue(match[4])
+		x.Filtered = parseRouteChangeValue(match[5])
+		x.Ignored = parseRouteChangeValue(match[6])
+		x.RxLimit = 0
+		x.Limit = 0
+		x.Accepted = parseRouteChangeValue(match[7])
 
-	c.handled = true
+		c.current.RouteChangeFormatV3 = false
+		c.handled = true
+		return
+	}
+
+	return
 }
 
 func getRouteChangeCount(values []string, p *protocol.Protocol) *protocol.RouteChangeCount {

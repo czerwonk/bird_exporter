@@ -21,6 +21,7 @@ type Protocol struct {
 	ImportFilter    string
 	ExportFilter    string
 	Proto           Proto
+	RouteChangeFormatV3 bool
 	Up              int
 	State           string
 	Imported        int64
@@ -39,6 +40,8 @@ type RouteChangeCount struct {
 	Rejected int64
 	Filtered int64
 	Ignored  int64
+	RxLimit  int64
+	Limit    int64
 	Accepted int64
 }
 

@@ -112,21 +112,70 @@ func TestUpdateAndWithdrawCounts(t *testing.T) {
 	assert.Int64Equal("import updates rejected", 2, x.ImportUpdates.Rejected, t)
 	assert.Int64Equal("import updates filtered", 3, x.ImportUpdates.Filtered, t)
 	assert.Int64Equal("import updates ignored", 4, x.ImportUpdates.Ignored, t)
+	assert.Int64Equal("import updates rx limit", 0, x.ImportUpdates.RxLimit, t)
+	assert.Int64Equal("import updates limit", 0, x.ImportUpdates.Limit, t)
 	assert.Int64Equal("import updates accepted", 5, x.ImportUpdates.Accepted, t)
 	assert.Int64Equal("import withdraws received", 6, x.ImportWithdraws.Received, t)
 	assert.Int64Equal("import withdraws rejected", 7, x.ImportWithdraws.Rejected, t)
 	assert.Int64Equal("import withdraws filtered", 8, x.ImportWithdraws.Filtered, t)
 	assert.Int64Equal("import withdraws ignored", 9, x.ImportWithdraws.Ignored, t)
+	assert.Int64Equal("import withdraws rx limit", 0, x.ImportWithdraws.RxLimit, t)
+	assert.Int64Equal("import withdraws limit", 0, x.ImportWithdraws.Limit, t)
 	assert.Int64Equal("import withdraws accepted", 10, x.ImportWithdraws.Accepted, t)
 	assert.Int64Equal("export updates received", 11, x.ExportUpdates.Received, t)
 	assert.Int64Equal("export updates rejected", 12, x.ExportUpdates.Rejected, t)
 	assert.Int64Equal("export updates filtered", 13, x.ExportUpdates.Filtered, t)
 	assert.Int64Equal("export updates ignored", 14, x.ExportUpdates.Ignored, t)
+	assert.Int64Equal("export updates rx limit", 0, x.ExportUpdates.RxLimit, t)
+	assert.Int64Equal("export updates limit", 0, x.ExportUpdates.Limit, t)
 	assert.Int64Equal("export updates accepted", 15, x.ExportUpdates.Accepted, t)
 	assert.Int64Equal("export withdraws received", 16, x.ExportWithdraws.Received, t)
 	assert.Int64Equal("export withdraws rejected", 17, x.ExportWithdraws.Rejected, t)
 	assert.Int64Equal("export withdraws filtered", 18, x.ExportWithdraws.Filtered, t)
 	assert.Int64Equal("export withdraws ignored", 19, x.ExportWithdraws.Ignored, t)
+	assert.Int64Equal("export withdraws rx limit", 0, x.ExportWithdraws.RxLimit, t)
+	assert.Int64Equal("export withdraws limit", 0, x.ExportWithdraws.Limit, t)
+	assert.Int64Equal("export withdraws accepted", 0, x.ExportWithdraws.Accepted, t)
+}
+
+func TestUpdateAndWithdrawCountsBird3(t *testing.T) {
+	data := "foo    BGP      master   up     00:01:00  Established\ntest\n" +
+		"  Routes:         12 imported, 1 filtered, 34 exported, 100 preferred\n" +
+		"  Route change stats:     received   rejected   filtered    ignored   RX limit      limit   accepted\n" +
+		"    Import updates:              1          2          3          4          9         10          5\n" +
+		"    Import withdraws:            6          7          8          9         10         11         12\n" +
+		"    Export updates:             11         12         13         14         15         16         17\n" +
+		"    Export withdraws:           16         17         18         19         20         21        ---"
+	p := ParseProtocols([]byte(data), "4")
+	x := p[0]
+
+	assert.Int64Equal("import updates received", 1, x.ImportUpdates.Received, t)
+	assert.Int64Equal("import updates rejected", 2, x.ImportUpdates.Rejected, t)
+	assert.Int64Equal("import updates filtered", 3, x.ImportUpdates.Filtered, t)
+	assert.Int64Equal("import updates ignored", 4, x.ImportUpdates.Ignored, t)
+	assert.Int64Equal("import updates rx limit", 9, x.ImportUpdates.RxLimit, t)
+	assert.Int64Equal("import updates limit", 10, x.ImportUpdates.Limit, t)
+	assert.Int64Equal("import updates accepted", 5, x.ImportUpdates.Accepted, t)
+	assert.Int64Equal("import withdraws received", 6, x.ImportWithdraws.Received, t)
+	assert.Int64Equal("import withdraws rejected", 7, x.ImportWithdraws.Rejected, t)
+	assert.Int64Equal("import withdraws filtered", 8, x.ImportWithdraws.Filtered, t)
+	assert.Int64Equal("import withdraws ignored", 9, x.ImportWithdraws.Ignored, t)
+	assert.Int64Equal("import withdraws rx limit", 10, x.ImportWithdraws.RxLimit, t)
+	assert.Int64Equal("import withdraws limit", 11, x.ImportWithdraws.Limit, t)
+	assert.Int64Equal("import withdraws accepted", 12, x.ImportWithdraws.Accepted, t)
+	assert.Int64Equal("export updates received", 11, x.ExportUpdates.Received, t)
+	assert.Int64Equal("export updates rejected", 12, x.ExportUpdates.Rejected, t)
+	assert.Int64Equal("export updates filtered", 13, x.ExportUpdates.Filtered, t)
+	assert.Int64Equal("export updates ignored", 14, x.ExportUpdates.Ignored, t)
+	assert.Int64Equal("export updates rx limit", 15, x.ExportUpdates.RxLimit, t)
+	assert.Int64Equal("export updates limit", 16, x.ExportUpdates.Limit, t)
+	assert.Int64Equal("export updates accepted", 17, x.ExportUpdates.Accepted, t)
+	assert.Int64Equal("export withdraws received", 16, x.ExportWithdraws.Received, t)
+	assert.Int64Equal("export withdraws rejected", 17, x.ExportWithdraws.Rejected, t)
+	assert.Int64Equal("export withdraws filtered", 18, x.ExportWithdraws.Filtered, t)
+	assert.Int64Equal("export withdraws ignored", 19, x.ExportWithdraws.Ignored, t)
+	assert.Int64Equal("export withdraws rx limit", 20, x.ExportWithdraws.RxLimit, t)
+	assert.Int64Equal("export withdraws limit", 21, x.ExportWithdraws.Limit, t)
 	assert.Int64Equal("export withdraws accepted", 0, x.ExportWithdraws.Accepted, t)
 }
 

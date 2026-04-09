@@ -95,4 +95,24 @@ func (m *GenericProtocolMetricExporter) Export(p *protocol.Protocol, ch chan<- p
 	ch <- prometheus.MustNewConstMetric(withdrawsExportFilterCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Filtered), l...)
 	ch <- prometheus.MustNewConstMetric(withdrawsExportAcceptCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Accepted), l...)
 	ch <- prometheus.MustNewConstMetric(withdrawsExportIgnoreCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Ignored), l...)
+	
+	if p.RouteChangeFormatV3 {
+		updatesImportRxLimitCountDesc := prometheus.NewDesc(m.prefix+"_changes_update_import_rx_limit_count", "Number of incoming updates reaching RX limit", labels, nil)
+		updatesImportLimitCountDesc := prometheus.NewDesc(m.prefix+"_changes_update_import_limit_count", "Number of incoming updates reaching limit", labels, nil)
+		updatesExportRxLimitCountDesc := prometheus.NewDesc(m.prefix+"_changes_update_export_rx_limit_count", "Number of outgoing updates reaching RX limit", labels, nil)
+		updatesExportLimitCountDesc := prometheus.NewDesc(m.prefix+"_changes_update_export_limit_count", "Number of outgoing updates reaching limit", labels, nil)
+		withdrawsImportRxLimitCountDesc := prometheus.NewDesc(m.prefix+"_changes_withdraw_import_rx_limit_count", "Number of incoming withdraws reaching RX limit", labels, nil)
+		withdrawsImportLimitCountDesc := prometheus.NewDesc(m.prefix+"_changes_withdraw_import_limit_count", "Number of incoming withdraws reaching limit", labels, nil)
+		withdrawsExportRxLimitCountDesc := prometheus.NewDesc(m.prefix+"_changes_withdraw_export_rx_limit_count", "Number of outgoing withdraws reaching RX limit", labels, nil)
+		withdrawsExportLimitCountDesc := prometheus.NewDesc(m.prefix+"_changes_withdraw_export_limit_count", "Number of outgoing withdraws reaching limit", labels, nil)
+
+		ch <- prometheus.MustNewConstMetric(updatesImportRxLimitCountDesc, prometheus.GaugeValue, float64(p.ImportUpdates.RxLimit), l...)
+		ch <- prometheus.MustNewConstMetric(updatesImportLimitCountDesc, prometheus.GaugeValue, float64(p.ImportUpdates.Limit), l...)
+		ch <- prometheus.MustNewConstMetric(updatesExportRxLimitCountDesc, prometheus.GaugeValue, float64(p.ExportUpdates.RxLimit), l...)
+		ch <- prometheus.MustNewConstMetric(updatesExportLimitCountDesc, prometheus.GaugeValue, float64(p.ExportUpdates.Limit), l...)
+		ch <- prometheus.MustNewConstMetric(withdrawsImportRxLimitCountDesc, prometheus.GaugeValue, float64(p.ImportWithdraws.RxLimit), l...)
+		ch <- prometheus.MustNewConstMetric(withdrawsImportLimitCountDesc, prometheus.GaugeValue, float64(p.ImportWithdraws.Limit), l...)
+		ch <- prometheus.MustNewConstMetric(withdrawsExportRxLimitCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.RxLimit), l...)
+		ch <- prometheus.MustNewConstMetric(withdrawsExportLimitCountDesc, prometheus.GaugeValue, float64(p.ExportWithdraws.Limit), l...)
+	}
 }
