@@ -24,6 +24,8 @@ Since version 1.1 bird_exporter can be used with bird 2.0+ using the `-bird.v2` 
 When using this parameter bird_exporter queries the same bird socket for IPv4 and IPv6.
 In this mode the IP protocol is determined by the channel information and parameters `-bird.ipv4`, `-bird.ipv6` and `-bird.socket6` are ignored.
 
+Bird 3.0 adds two extra columns (RX limit, limit) to route change stats. The exporter detects this format automatically.
+
 ## Metric formats
 
 In version 1.0 a new metric format was introduced.
