@@ -35,7 +35,7 @@ func init() {
 	uptimeRegex = regexp.MustCompile(`^(?:((\d+):(\d{2}):(\d{2}))|(\d+)|(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:|\.\d+)))$`)
 	routeChangeRegex = regexp.MustCompile(`(Import|Export) (updates|withdraws):\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s*`)
 	filterRegex = regexp.MustCompile(`(Input|Output) filter:\s+(.*)`)
-	channelRegex = regexp.MustCompile(`Channel ipv(4|6)`)
+	channelRegex = regexp.MustCompile(`Channel (ipv|vpn)(4|6)(-mpls)?`)
 }
 
 // ParseProtocols parses bird output and returns protocol.Protocol structs
