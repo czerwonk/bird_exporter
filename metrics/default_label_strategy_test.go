@@ -14,7 +14,7 @@ func TestLabelNames(t *testing.T) {
 		Description:  " foo = bar x: y",
 		ImportFilter: "in",
 		ExportFilter: "out",
-		IPVersion:    "6",
+		AFIFamily:    "6",
 		Proto:        protocol.BGP,
 	})
 
@@ -29,7 +29,7 @@ func TestLabelValues(t *testing.T) {
 		Description:  " foo = bar x: y",
 		ImportFilter: "in",
 		ExportFilter: "out",
-		IPVersion:    "6",
+		AFIFamily:    "6",
 		Proto:        protocol.BGP,
 	})
 

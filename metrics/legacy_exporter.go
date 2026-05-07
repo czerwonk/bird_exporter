@@ -23,7 +23,7 @@ func (e *LegacyMetricExporter) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (e *LegacyMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric, newFormat bool) {
-	if p.IPVersion == "4" {
+	if p.AFIFamily == "4" {
 		e.ipv4Exporter.Export(p, ch, false)
 	} else {
 		e.ipv6Exporter.Export(p, ch, false)

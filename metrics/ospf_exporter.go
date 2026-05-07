@@ -47,8 +47,8 @@ func (m *ospfMetricExporter) Describe(ch chan<- *prometheus.Desc) {
 	m.describe("6", ch)
 }
 
-func (m *ospfMetricExporter) describe(ipVersion string, ch chan<- *prometheus.Desc) {
-	d := m.descriptions[ipVersion]
+func (m *ospfMetricExporter) describe(afiFamily string, ch chan<- *prometheus.Desc) {
+	d := m.descriptions[afiFamily]
 	ch <- d.runningDesc
 	ch <- d.interfaceCountDesc
 	ch <- d.neighborCountDesc
@@ -56,7 +56,7 @@ func (m *ospfMetricExporter) describe(ipVersion string, ch chan<- *prometheus.De
 }
 
 func (m *ospfMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric, newFormat bool) {
-	d := m.descriptions[p.IPVersion]
+	d := m.descriptions[p.AFIFamily]
 
 	var running float64
 	if p.State == "Running" {

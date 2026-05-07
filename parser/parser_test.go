@@ -24,7 +24,7 @@ func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("filtered", 1, x.Filtered, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
-	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
+	assert.StringEqual("afiFamily", "4", x.AFIFamily, t)
 	assert.Int64Equal("uptime", 3600, int64(x.Uptime), t)
 }
 
@@ -41,7 +41,7 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("filtered", 1, x.Filtered, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
-	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
+	assert.StringEqual("afiFamily", "4", x.AFIFamily, t)
 	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
 
@@ -63,7 +63,7 @@ func TestEstablishedBgpIsoLongTimeFormat(t *testing.T) {
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("filtered", 1, x.Filtered, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
-	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
+	assert.StringEqual("afiFamily", "4", x.AFIFamily, t)
 	assert.Int64Equal("uptime", 3600, int64(x.Uptime), t)
 }
 
@@ -73,7 +73,7 @@ func TestIpv6BGP(t *testing.T) {
 	assert.IntEqual("protocols", 1, len(p), t)
 
 	x := p[0]
-	assert.StringEqual("ipVersion", "6", x.IPVersion, t)
+	assert.StringEqual("afiFamily", "6", x.AFIFamily, t)
 }
 
 func TestActiveBGP(t *testing.T) {
@@ -87,7 +87,7 @@ func TestActiveBGP(t *testing.T) {
 	assert.IntEqual("established", 0, x.Up, t)
 	assert.IntEqual("imported", 0, int(x.Imported), t)
 	assert.IntEqual("exported", 0, int(x.Exported), t)
-	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
+	assert.StringEqual("afiFamily", "4", x.AFIFamily, t)
 	assert.IntEqual("uptime", 0, int(x.Uptime), t)
 }
 
@@ -175,7 +175,7 @@ func TestWithBird2(t *testing.T) {
 	x := p[0]
 	assert.StringEqual("BGP ipv6 name", "bgp1", x.Name, t)
 	assert.IntEqual("BGP ipv6 proto", int(protocol.BGP), int(x.Proto), t)
-	assert.StringEqual("BGP ipv6 ip version", "6", x.IPVersion, t)
+	assert.StringEqual("BGP ipv6 ip version", "6", x.AFIFamily, t)
 	assert.Int64Equal("BGP ipv6 imported", 1, x.Imported, t)
 	assert.Int64Equal("BGP ipv6 exported", 3, x.Exported, t)
 	assert.Int64Equal("BGP ipv6 filtered", 2, x.Filtered, t)
@@ -186,7 +186,7 @@ func TestWithBird2(t *testing.T) {
 	x = p[1]
 	assert.StringEqual("Direct ipv4 name", "direct1", x.Name, t)
 	assert.IntEqual("Direct ipv4 proto", int(protocol.Direct), int(x.Proto), t)
-	assert.StringEqual("Direct ipv4 ip version", "4", x.IPVersion, t)
+	assert.StringEqual("Direct ipv4 ip version", "4", x.AFIFamily, t)
 	assert.Int64Equal("Direct ipv4 imported", 12, x.Imported, t)
 	assert.Int64Equal("Direct ipv4 exported", 34, x.Exported, t)
 	assert.Int64Equal("Direct ipv4 filtered", 1, x.Filtered, t)
@@ -215,7 +215,7 @@ func TestWithBird2(t *testing.T) {
 	x = p[2]
 	assert.StringEqual("Direct ipv6 name", "direct1", x.Name, t)
 	assert.IntEqual("Direct ipv6 proto", int(protocol.Direct), int(x.Proto), t)
-	assert.StringEqual("Direct ipv6 ip version", "6", x.IPVersion, t)
+	assert.StringEqual("Direct ipv6 ip version", "6", x.AFIFamily, t)
 	assert.Int64Equal("Direct ipv6 imported", 3, x.Imported, t)
 	assert.Int64Equal("Direct ipv6 exported", 5, x.Exported, t)
 	assert.Int64Equal("Direct ipv6 filtered", 7, x.Filtered, t)
@@ -244,7 +244,7 @@ func TestWithBird2(t *testing.T) {
 	x = p[3]
 	assert.StringEqual("OSPF ipv4 name", "ospf1", x.Name, t)
 	assert.IntEqual("OSPF ipv4 proto", int(protocol.OSPF), int(x.Proto), t)
-	assert.StringEqual("OSPF ipv4 ip version", "4", x.IPVersion, t)
+	assert.StringEqual("OSPF ipv4 ip version", "4", x.AFIFamily, t)
 	assert.Int64Equal("OSPF ipv4 imported", 4, x.Imported, t)
 	assert.Int64Equal("OSPF ipv4 exported", 2, x.Exported, t)
 	assert.Int64Equal("OSPF ipv4 filtered", 3, x.Filtered, t)
@@ -263,7 +263,7 @@ func TestOSPFOldTimeFormat(t *testing.T) {
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
-	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
+	assert.StringEqual("afiFamily", "4", x.AFIFamily, t)
 }
 
 func TestOSPFCurrentTimeFormat(t *testing.T) {
@@ -278,7 +278,7 @@ func TestOSPFCurrentTimeFormat(t *testing.T) {
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
-	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
+	assert.StringEqual("afiFamily", "4", x.AFIFamily, t)
 	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
 
@@ -294,7 +294,7 @@ func TestOSPFIsoMsecTimeFormat(t *testing.T) {
 	assert.Int64Equal("imported", 12, x.Imported, t)
 	assert.Int64Equal("exported", 34, x.Exported, t)
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
-	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
+	assert.StringEqual("afiFamily", "4", x.AFIFamily, t)
 	assert.IntEqual("uptime", 13410, x.Uptime, t)
 }
 

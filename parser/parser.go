@@ -25,7 +25,7 @@ type context struct {
 	line      string
 	handled   bool
 	protocols []*protocol.Protocol
-	ipVersion string
+	afiFamily string
 }
 
 func init() {
@@ -39,11 +39,11 @@ func init() {
 }
 
 // ParseProtocols parses bird output and returns protocol.Protocol structs
-func ParseProtocols(data []byte, ipVersion string) []*protocol.Protocol {
+func ParseProtocols(data []byte, afiFamily string) []*protocol.Protocol {
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
 
-	c := &context{protocols: make([]*protocol.Protocol, 0), ipVersion: ipVersion}
+	c := &context{protocols: make([]*protocol.Protocol, 0), afiFamily: afiFamily}
 
 	var handlers = []func(*context){
 		handleEmptyLine,
@@ -87,7 +87,7 @@ func parseLineForProtocol(c *context) {
 	proto := parseProto(match[2])
 	ut := parseUptime(match[5])
 
-	c.current = protocol.NewProtocol(match[1], proto, c.ipVersion, ut)
+	c.current = protocol.NewProtocol(match[1], proto, c.afiFamily, ut)
 	c.current.Up = parseState(match[4])
 	c.current.State = match[6]
 
@@ -159,24 +159,29 @@ func parseUptime(value string) int {
 }
 
 func parseLineForChannel(c *context) {
-	if c.ipVersion != "" || c.current == nil {
+	if c.afiFamily != "" || c.current == nil {
 		return
 	}
 
-	channel := channelRegex.FindStringSubmatch(c.line)
-	if channel == nil {
+	match := channelRegex.FindStringSubmatch(c.line)
+	if match == nil {
 		return
 	}
 
-	if len(c.current.IPVersion) == 0 {
-		c.current.IPVersion = channel[1]
+	if len(c.current.AFIFamily) == 0 {
+			c.current.AFIFamily = match[1] + match[2]
+			if match[3] != "" {
+				c.current.MPLSEnabled = true
+			}
+		}
 	} else {
 		c.current = &protocol.Protocol{
 			Name:      c.current.Name,
 			Proto:     c.current.Proto,
 			Up:        c.current.Up,
 			Uptime:    c.current.Uptime,
-			IPVersion: channel[1],
+			AFIFamily: match[1] + match[2],
+			MPLSEnabled: match[3] != ""
 		}
 		c.protocols = append(c.protocols, c.current)
 	}
