@@ -32,7 +32,7 @@ func (d *DefaultLabelStrategy) LabelNames(p *protocol.Protocol) []string {
 
 // LabelValues returns the values for a protocol
 func (d *DefaultLabelStrategy) LabelValues(p *protocol.Protocol) []string {
-	res := []string{p.Name, protoString(p), p.IPVersion, p.ImportFilter, p.ExportFilter}
+	res := []string{p.Name, protoString(p), p.MPLSEnabled, p.AFIFamily, p.ImportFilter, p.ExportFilter} // TODO: IPv/VPN support
 	if d.descriptionLabels && p.Description != "" {
 		res = append(res, labelValuesFromDescription(p.Description, d)...)
 	}
@@ -67,7 +67,7 @@ func protoString(p *protocol.Protocol) string {
 	case protocol.BGP:
 		return "BGP"
 	case protocol.OSPF:
-		if p.IPVersion == "4" {
+		if p.AFIFamily == "4" {
 			return "OSPF"
 		}
 		return "OSPFv3"

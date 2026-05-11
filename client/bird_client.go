@@ -24,25 +24,25 @@ type BirdClientOptions struct {
 
 // GetProtocols retrieves protocol information and statistics from bird
 func (c *BirdClient) GetProtocols() ([]*protocol.Protocol, error) {
-	ipVersions := make([]string, 0)
+	afiFamilies := make([]string, 0)
 	if c.Options.BirdV2 {
-		ipVersions = append(ipVersions, "")
+		afiFamilies = append(afiFamilies, "")
 	} else {
 		if c.Options.BirdEnabled {
-			ipVersions = append(ipVersions, "4")
+			afiFamilies = append(afiFamilies, "4")
 		}
 
 		if c.Options.Bird6Enabled {
-			ipVersions = append(ipVersions, "6")
+			afiFamilies = append(afiFamilies, "6")
 		}
 	}
 
-	return c.protocolsFromBird(ipVersions)
+	return c.protocolsFromBird(afiFamilies)
 }
 
 // GetOSPFAreas retrieves OSPF specific information from bird
 func (c *BirdClient) GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.OSPFArea, error) {
-	sock := c.socketFor(protocol.IPVersion)
+	sock := c.socketFor(protocol.AFIFamily)
 	b, err := birdsocket.Query(sock, fmt.Sprintf("show ospf %s", protocol.Name))
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (c *BirdClient) GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.OSPF
 
 // GetBFDSessions retrieves BFD specific information from bird
 func (c *BirdClient) GetBFDSessions(protocol *protocol.Protocol) ([]*protocol.BFDSession, error) {
-	sock := c.socketFor(protocol.IPVersion)
+	sock := c.socketFor(protocol.AFIFamily)
 	b, err := birdsocket.Query(sock, fmt.Sprintf("show bfd sessions %s", protocol.Name))
 	if err != nil {
 		return nil, err
@@ -62,12 +62,12 @@ func (c *BirdClient) GetBFDSessions(protocol *protocol.Protocol) ([]*protocol.BF
 	return parser.ParseBFDSessions(protocol.Name, b), nil
 }
 
-func (c *BirdClient) protocolsFromBird(ipVersions []string) ([]*protocol.Protocol, error) {
+func (c *BirdClient) protocolsFromBird(afiFamilies []string) ([]*protocol.Protocol, error) {
 	protocols := make([]*protocol.Protocol, 0)
 
-	for _, ipVersion := range ipVersions {
-		sock := c.socketFor(ipVersion)
-		s, err := c.protocolsFromSocket(sock, ipVersion)
+	for _, afiFamily := range afiFamilies {
+		sock := c.socketFor(afiFamily)
+		s, err := c.protocolsFromSocket(sock, afiFamily)
 		if err != nil {
 			return nil, err
 		}
@@ -78,17 +78,17 @@ func (c *BirdClient) protocolsFromBird(ipVersions []string) ([]*protocol.Protoco
 	return protocols, nil
 }
 
-func (c *BirdClient) protocolsFromSocket(socketPath string, ipVersion string) ([]*protocol.Protocol, error) {
+func (c *BirdClient) protocolsFromSocket(socketPath string, afiFamily string) ([]*protocol.Protocol, error) {
 	b, err := birdsocket.Query(socketPath, "show protocols all")
 	if err != nil {
 		return nil, err
 	}
 
-	return parser.ParseProtocols(b, ipVersion), nil
+	return parser.ParseProtocols(b, afiFamily), nil
 }
 
-func (c *BirdClient) socketFor(ipVersion string) string {
-	if !c.Options.BirdV2 && ipVersion == "6" {
+func (c *BirdClient) socketFor(afiFamily string) string {
+	if !c.Options.BirdV2 && afiFamily == "6" {
 		return c.Options.Bird6Socket
 	}
 

@@ -17,7 +17,9 @@ type Proto int
 type Protocol struct {
 	Name            string
 	Description     string
-	IPVersion       string
+	AFIFamily       string
+	AFIFamily       string
+	MPLSEnabled		bool
 	ImportFilter    string
 	ExportFilter    string
 	Proto           Proto
@@ -42,6 +44,6 @@ type RouteChangeCount struct {
 	Accepted int64
 }
 
-func NewProtocol(name string, proto Proto, ipVersion string, uptime int) *Protocol {
-	return &Protocol{Name: name, Proto: proto, IPVersion: ipVersion, Uptime: uptime}
+func NewProtocol(name string, proto Proto, afiFamily, afiFamily string, uptime int) *Protocol {
+	return &Protocol{Name: name, Proto: proto, AFIFamily: afiFamily, AFIFamily: afiFamily, Uptime: uptime}
 }
