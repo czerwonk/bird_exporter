@@ -8,7 +8,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} \
 	GOARM=${TARGETVARIANT#v} \
 	go build -a -installsuffix cgo -o /go/bin/bird_exporter
 
-FROM alpine:latest
+FROM alpine:3.24.1
 RUN apk --no-cache add ca-certificates bash tzdata
 WORKDIR /app
 COPY --from=builder /go/bin/bird_exporter .
