@@ -1,10 +1,18 @@
 package parser
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/czerwonk/testutils/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestParseOSPFWithErrorRejectsOversizeLine(t *testing.T) {
+	areas, err := ParseOSPFWithError([]byte(strings.Repeat("x", maxProtocolLineBytes+1) + "\n"))
+	require.Error(t, err)
+	require.Empty(t, areas)
+}
 
 func TestOSPFArea(t *testing.T) {
 	data := "ospf1:\n" +

@@ -23,6 +23,41 @@ func TestParseProtocolsIgnoresOrphanDescription(t *testing.T) {
 	require.Empty(t, protocols)
 }
 
+func TestMultiChannelPreservesProtocolMetadata(t *testing.T) {
+	data := []byte("peer BGP master up 00:01:00 Established\n" +
+		"  Description: site=ams\n" +
+		"  Channel ipv4\n" +
+		"    Routes: 1 imported, 2 exported, 1 preferred\n" +
+		"  Channel ipv6\n" +
+		"    Routes: 3 imported, 4 exported, 3 preferred\n")
+
+	protocols, err := ParseProtocolsWithError(data, "")
+	require.NoError(t, err)
+	require.Len(t, protocols, 2)
+	for _, parsedProtocol := range protocols {
+		require.Equal(t, "site=ams", parsedProtocol.Description)
+		require.Equal(t, "Established", parsedProtocol.State)
+	}
+	require.Equal(t, "4", protocols[0].IPVersion)
+	require.Equal(t, "6", protocols[1].IPVersion)
+}
+
+func TestRPKIChannelsRemainSeparate(t *testing.T) {
+	data := []byte("r3k RPKI --- up 00:01:00 Established\n" +
+		"  Channel roa4\n" +
+		"    Routes: 10 imported, 0 exported, 10 preferred\n" +
+		"  Channel roa6\n" +
+		"    Routes: 20 imported, 0 exported, 20 preferred\n")
+
+	protocols, err := ParseProtocolsWithError(data, "")
+	require.NoError(t, err)
+	require.Len(t, protocols, 2)
+	require.Equal(t, "4", protocols[0].IPVersion)
+	require.EqualValues(t, 10, protocols[0].Imported)
+	require.Equal(t, "6", protocols[1].IPVersion)
+	require.EqualValues(t, 20, protocols[1].Imported)
+}
+
 func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	overrideNowFunc(func() time.Time {
 		return time.Date(2018, 1, 1, 2, 0, 0, 0, time.UTC)

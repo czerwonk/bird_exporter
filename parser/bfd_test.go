@@ -1,12 +1,20 @@
 package parser
 
 import (
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestParseBFDSessionsWithErrorRejectsOversizeLine(t *testing.T) {
+	sessions, err := ParseBFDSessionsWithError("bfd1", []byte(strings.Repeat("x", maxProtocolLineBytes+1)+"\n"))
+	require.Error(t, err)
+	require.Empty(t, sessions)
+}
 
 func TestParseBFDSessions(t *testing.T) {
 	overrideNowFunc(func() time.Time {

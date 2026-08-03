@@ -1,10 +1,10 @@
 package parser
 
 import (
-	"regexp"
-
 	"bufio"
 	"bytes"
+	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/czerwonk/bird_exporter/protocol"
@@ -23,16 +23,22 @@ type ospfContext struct {
 
 func init() {
 	ospf = &ospfRegex{
-		area:     regexp.MustCompile("Area: [^\\s]+ \\(([^\\s]+)\\)"),
-		counters: regexp.MustCompile("Number of ([^:]+):\\s*(\\d+)"),
+		area:     regexp.MustCompile(`Area: [^\s]+ \(([^\s]+)\)`),
+		counters: regexp.MustCompile(`Number of ([^:]+):\s*(\d+)`),
 	}
 }
 
 var ospf *ospfRegex
 
 func ParseOSPF(data []byte) []*protocol.OSPFArea {
-	reader := bytes.NewReader(data)
-	scanner := bufio.NewScanner(reader)
+	areas, _ := ParseOSPFWithError(data)
+	return areas
+}
+
+// ParseOSPFWithError parses OSPF area output and reports scanner failures.
+func ParseOSPFWithError(data []byte) ([]*protocol.OSPFArea, error) {
+	scanner := bufio.NewScanner(bytes.NewReader(data))
+	scanner.Buffer(make([]byte, 64<<10), maxProtocolLineBytes)
 
 	c := &ospfContext{
 		areas: make([]*protocol.OSPFArea, 0),
@@ -43,8 +49,11 @@ func ParseOSPF(data []byte) []*protocol.OSPFArea {
 		parseLineForOspfArea(c)
 		parseLineForOspfCounters(c)
 	}
+	if err := scanner.Err(); err != nil {
+		return c.areas, fmt.Errorf("scan BIRD OSPF reply: %w", err)
+	}
 
-	return c.areas
+	return c.areas, nil
 }
 
 func parseLineForOspfArea(c *ospfContext) {

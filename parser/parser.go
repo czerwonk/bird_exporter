@@ -38,7 +38,7 @@ func init() {
 	uptimeRegex = regexp.MustCompile(`^(?:((\d+):(\d{2}):(\d{2}))|(\d+)|(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:|\.\d+)))$`)
 	routeChangeRegex = regexp.MustCompile(`(Import|Export) (updates|withdraws):\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)(?:\s+(\d+|---)\s+(\d+|---))?`)
 	filterRegex = regexp.MustCompile(`(Input|Output) filter:\s+(.*)`)
-	channelRegex = regexp.MustCompile(`Channel ipv(4|6)`)
+	channelRegex = regexp.MustCompile(`^\s+Channel (?:ipv|roa)(4|6)(?:\s|$)`)
 }
 
 // ParseProtocols parses bird output and returns protocol.Protocol structs
@@ -190,12 +190,13 @@ func parseLineForChannel(c *context) {
 		c.current.IPVersion = channel[1]
 	} else {
 		c.current = &protocol.Protocol{
-			Name:                c.current.Name,
-			Proto:               c.current.Proto,
-			Up:                  c.current.Up,
-			Uptime:              c.current.Uptime,
-			IPVersion:           channel[1],
-			RouteChangeFormatV3: c.current.RouteChangeFormatV3,
+			Name:        c.current.Name,
+			Description: c.current.Description,
+			Proto:       c.current.Proto,
+			Up:          c.current.Up,
+			State:       c.current.State,
+			Uptime:      c.current.Uptime,
+			IPVersion:   channel[1],
 		}
 		c.protocols = append(c.protocols, c.current)
 	}
