@@ -62,6 +62,14 @@ In version 0.7.1 the default port changed to 9324 since port 9200 is the default
 
 In version 0.8 communication to bird changed to sockets. The default socket path is `/var/run/bird.ctl` (for bird) and `/var/run/bird6.ctl` (for bird6). In case you are using different paths in your installation, the socket path can be specified by usind the `-bird.socket` (for bird) and `-bird.socket6` (for bird6) flag.
 
+The BIRD control socket is a privileged command channel. Prefer a dedicated
+restricted BIRD CLI socket where the BIRD version supports it, and grant the
+exporter process access only to that socket.
+
+The standalone binary listens on all interfaces for compatibility. Bind to
+loopback, apply a network allowlist, or put the endpoint behind an
+authenticating TLS reverse proxy when the metrics network is not trusted.
+
 ## Install
 
 ```
@@ -89,11 +97,22 @@ Hang tight while we grab the latest from your chart repositories...
 ...Successfully got an update from the "bird-exporter" chart repository
 Update Complete. ⎈Happy Helming!⎈
 
-$ helm install bird-exporter bird-exporter/bird_exporter
+$ helm install bird-exporter bird-exporter/bird-exporter
 NAME: bird-exporter
 ...
 
 ```
+
+The chart uses `ghcr.io/czerwonk/bird_exporter` and runs as UID/GID 1000 with
+all capabilities dropped, a read-only root filesystem, the RuntimeDefault
+seccomp profile, and no Kubernetes service-account token. Set `fsGroup` to the
+numeric group that can access the selected BIRD socket. A read-only mount does
+not make the BIRD command protocol read-only.
+
+The container image also runs as UID/GID 1000 outside Kubernetes. Add only the
+host socket group with Docker's `--group-add` option instead of running the
+container as root. Set `TZ` to the BIRD host timezone when BIRD emits local
+timestamps without a timezone.
 
 ## Usage
 
