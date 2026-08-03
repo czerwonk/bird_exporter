@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: bird-exporter
@@ -6,6 +6,9 @@ metadata:
   labels:
     app: bird-exporter
 spec:
+  selector:
+    matchLabels:
+      app: bird-exporter
   updateStrategy:
     type: RollingUpdate
   template:
@@ -13,28 +16,55 @@ spec:
       labels:
         app: bird-exporter
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 2000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
       containers:
-      - name: bird-exporter
-        image: bird_exporter:latest
-        args: ["-format.new=true", "-bird.socket=/var/run/bird/bird.ctl"]
-        resources:
-          limits:
-            cpu: 100m
-            memory: 32Mi
-          requests:
-            cpu: 100m
-            memory: 32Mi
-        volumeMounts:
-        - mountPath: /var/run/bird/
-          name: bird-socket
-          readOnly: true
-        ports:
-          - containerPort: 9324
-            name: metrics
+        - name: bird-exporter
+          image: ghcr.io/czerwonk/bird_exporter:v1.5.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - -format.new=true
+            - -bird.socket=/var/run/bird/bird.ctl
+            - -bird.socket6=/var/run/bird/bird6.ctl
+            - -web.scrape-timeout=5s
+            - -web.max-concurrent-scrapes=1
+            - -bird.max-response-bytes=4194304
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+          resources:
+            limits:
+              cpu: 100m
+              memory: 64Mi
+            requests:
+              cpu: 100m
+              memory: 32Mi
+          ports:
+            - containerPort: 9324
+              name: metrics
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/run/bird
+              name: bird-socket
+              readOnly: true
       volumes:
-      - name: bird-socket
-        hostPath:
-          path: /var/run/bird/
+        - name: bird-socket
+          hostPath:
+            path: /var/run/bird
+            type: Directory
