@@ -3,12 +3,15 @@ package parser
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/czerwonk/bird_exporter/protocol"
 )
+
+const maxProtocolLineBytes = 1 << 20
 
 var (
 	protocolRegex    *regexp.Regexp
@@ -40,8 +43,15 @@ func init() {
 
 // ParseProtocols parses bird output and returns protocol.Protocol structs
 func ParseProtocols(data []byte, ipVersion string) []*protocol.Protocol {
+	protocols, _ := ParseProtocolsWithError(data, ipVersion)
+	return protocols
+}
+
+// ParseProtocolsWithError parses BIRD output and reports scanner failures.
+func ParseProtocolsWithError(data []byte, ipVersion string) ([]*protocol.Protocol, error) {
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
+	scanner.Buffer(make([]byte, 64<<10), maxProtocolLineBytes)
 
 	c := &context{protocols: make([]*protocol.Protocol, 0), ipVersion: ipVersion}
 
@@ -66,7 +76,11 @@ func ParseProtocols(data []byte, ipVersion string) []*protocol.Protocol {
 		}
 	}
 
-	return c.protocols
+	if err := scanner.Err(); err != nil {
+		return c.protocols, fmt.Errorf("scan BIRD protocols reply: %w", err)
+	}
+
+	return c.protocols, nil
 }
 
 func handleEmptyLine(c *context) {
@@ -96,6 +110,10 @@ func parseLineForProtocol(c *context) {
 }
 
 func parseLineForDescription(c *context) {
+	if c.current == nil {
+		return
+	}
+
 	match := descriptionRegex.FindStringSubmatch(c.line)
 
 	if match == nil {

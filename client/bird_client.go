@@ -84,7 +84,7 @@ func (c *BirdClient) protocolsFromSocket(socketPath string, ipVersion string) ([
 		return nil, err
 	}
 
-	return parser.ParseProtocols(b, ipVersion), nil
+	return parser.ParseProtocolsWithError(b, ipVersion)
 }
 
 func (c *BirdClient) socketFor(ipVersion string) string {

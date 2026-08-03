@@ -1,12 +1,27 @@
 package parser
 
 import (
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/czerwonk/testutils/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestParseProtocolsWithErrorRejectsOversizeLine(t *testing.T) {
+	data := strings.Repeat("x", maxProtocolLineBytes+1) + "\n"
+	protocols, err := ParseProtocolsWithError([]byte(data), "4")
+	require.Error(t, err)
+	require.Empty(t, protocols)
+}
+
+func TestParseProtocolsIgnoresOrphanDescription(t *testing.T) {
+	protocols, err := ParseProtocolsWithError([]byte("  Description: untrusted=value\n0000\n"), "4")
+	require.NoError(t, err)
+	require.Empty(t, protocols)
+}
 
 func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	overrideNowFunc(func() time.Time {
