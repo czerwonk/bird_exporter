@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/client_golang/prometheus"
@@ -12,7 +14,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "1.5.0"
+var version = "1.5.0"
+
+const (
+	serverReadHeaderTimeout = 5 * time.Second
+	serverReadTimeout       = 10 * time.Second
+	serverWriteTimeout      = 30 * time.Second
+	serverIdleTimeout       = 60 * time.Second
+	serverMaxHeaderBytes    = 1 << 20
+)
 
 var (
 	showVersion      = flag.Bool("version", false, "Print version information.")
@@ -73,26 +83,65 @@ func startServer() {
 		log.Info("INFO: You are using the old metric format. Please consider using the new (more convenient one) by setting -format.new=true.")
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
-		w.Write([]byte(`<html>
-			<head><title>Bird Routing Daemon Exporter (Version ` + version + `)</title></head>
-			<body>
-			<h1>Bird Routing Daemon Exporter</h1>
-			<p><a href="` + *metricsPath + `">Metrics</a></p>
-			<h2>More information:</h2>
-			<p><a href="https://github.com/czerwonk/bird_exporter">github.com/czerwonk/bird_exporter</a></p>
-			</body>
-			</html>`))
-	})
-	http.HandleFunc(*metricsPath, handleMetricsRequest)
+	mux := newHTTPMux(*metricsPath, handleMetricsRequest)
+	server := newHTTPServer(*listenAddress, mux)
 
 	log.Infof("Listening for %s on %s (TLS: %v)", *metricsPath, *listenAddress, *tlsEnabled)
 	if *tlsEnabled {
-		log.Fatal(http.ListenAndServeTLS(*listenAddress, *tlsCertChainPath, *tlsKeyPath, nil))
+		log.Fatal(server.ListenAndServeTLS(*tlsCertChainPath, *tlsKeyPath))
 		return
 	}
 
-	log.Fatal(http.ListenAndServe(*listenAddress, nil))
+	log.Fatal(server.ListenAndServe())
+}
+
+func newHTTPMux(metricsPath string, metricsHandler http.HandlerFunc) *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, request *http.Request) {
+		if request.URL.Path != "/" {
+			http.NotFound(w, request)
+			return
+		}
+		if request.Method != http.MethodGet && request.Method != http.MethodHead {
+			w.Header().Set("Allow", "GET, HEAD")
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		_, err := io.WriteString(w, `<html>
+			<head><title>Bird Routing Daemon Exporter (Version `+version+`)</title></head>
+			<body>
+			<h1>Bird Routing Daemon Exporter</h1>
+			<p><a href="`+metricsPath+`">Metrics</a></p>
+			<h2>More information:</h2>
+			<p><a href="https://github.com/czerwonk/bird_exporter">github.com/czerwonk/bird_exporter</a></p>
+			</body>
+			</html>`)
+		if err != nil {
+			log.Warnf("Could not write landing page: %v", err)
+		}
+	})
+	mux.HandleFunc(metricsPath, func(w http.ResponseWriter, request *http.Request) {
+		if request.Method != http.MethodGet {
+			w.Header().Set("Allow", "GET")
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		metricsHandler(w, request)
+	})
+	return mux
+}
+
+func newHTTPServer(address string, handler http.Handler) *http.Server {
+	return &http.Server{
+		Addr:              address,
+		Handler:           handler,
+		ReadHeaderTimeout: serverReadHeaderTimeout,
+		ReadTimeout:       serverReadTimeout,
+		WriteTimeout:      serverWriteTimeout,
+		IdleTimeout:       serverIdleTimeout,
+		MaxHeaderBytes:    serverMaxHeaderBytes,
+	}
 }
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
