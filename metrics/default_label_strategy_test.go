@@ -1,9 +1,12 @@
 package metrics
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/czerwonk/bird_exporter/protocol"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -55,7 +58,11 @@ func TestInvalidDescriptionLabelNamesAreDropped(t *testing.T) {
 	}{
 		{name: "invalid name", expression: `([^=]+)=([^ ]+)`, description: `bad-label=value`},
 		{name: "reserved name", expression: `(\w+)=(\w+)`, description: `state=value`},
+		{name: "Prometheus internal name", expression: `(\w+)=(\w+)`, description: `__name__=unexpected`},
 		{name: "duplicate name", expression: `(\w+)=(\w+)`, description: `site=ams site=fra`},
+		{name: "oversized name", expression: `(\w+)=(\w+)`, description: strings.Repeat("a", maxDescriptionLabelNameBytes+1) + `=value`},
+		{name: "oversized value", expression: `(\w+)=(\w+)`, description: `site=` + strings.Repeat("a", maxDescriptionLabelValueBytes+1)},
+		{name: "too many labels", expression: `(\w+)=(\w+)`, description: descriptionLabels(maxDescriptionLabels + 1)},
 	}
 
 	for _, tt := range tests {
@@ -66,6 +73,26 @@ func TestInvalidDescriptionLabelNamesAreDropped(t *testing.T) {
 			assert.Len(t, strategy.LabelValues(p), 5)
 		})
 	}
+}
+
+func TestPrometheusReservedDescriptionLabelDoesNotPanicExporter(t *testing.T) {
+	strategy := NewDefaultLabelStrategy(true, `(\w+)=(\w+)`)
+	exporter := NewGenericProtocolMetricExporter("bird_protocol", true, strategy)
+	p := &protocol.Protocol{Name: "peer", Proto: protocol.BGP, Description: "__name__=unexpected"}
+	metricChannel := make(chan prometheus.Metric, 128)
+
+	require.NotPanics(t, func() {
+		exporter.Export(p, metricChannel, true)
+	})
+}
+
+func descriptionLabels(count int) string {
+	labels := make([]string, 0, count)
+	for i := 0; i < count; i++ {
+		labels = append(labels, fmt.Sprintf("label%d=value", i))
+	}
+
+	return strings.Join(labels, " ")
 }
 
 func TestInvalidRegexDoesNotPanic(t *testing.T) {

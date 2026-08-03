@@ -10,6 +10,13 @@ import (
 
 var prometheusLabelNameRegex = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
 
+const (
+	maxDescriptionLabels          = 32
+	maxDescriptionLabelNameBytes  = 128
+	maxDescriptionLabelValueBytes = 1024
+	prometheusReservedLabelPrefix = "__"
+)
+
 var baseProtocolLabelNames = map[string]struct{}{
 	"name":          {},
 	"proto":         {},
@@ -77,7 +84,10 @@ func (d *DefaultLabelStrategy) labelsFromDescription(p *protocol.Protocol) ([]st
 		return nil, nil
 	}
 
-	matches := d.descriptionLabelsRegex.FindAllStringSubmatch(p.Description, -1)
+	matches := d.descriptionLabelsRegex.FindAllStringSubmatch(p.Description, maxDescriptionLabels+1)
+	if len(matches) > maxDescriptionLabels {
+		return nil, nil
+	}
 	names := make([]string, 0, len(matches))
 	values := make([]string, 0, len(matches))
 	seen := make(map[string]struct{}, len(matches))
@@ -88,7 +98,11 @@ func (d *DefaultLabelStrategy) labelsFromDescription(p *protocol.Protocol) ([]st
 		}
 
 		name := strings.TrimSpace(submatch[1])
-		if !prometheusLabelNameRegex.MatchString(name) {
+		value := strings.TrimSpace(submatch[2])
+		if len(name) > maxDescriptionLabelNameBytes || len(value) > maxDescriptionLabelValueBytes {
+			return nil, nil
+		}
+		if !prometheusLabelNameRegex.MatchString(name) || strings.HasPrefix(name, prometheusReservedLabelPrefix) {
 			return nil, nil
 		}
 		if _, reserved := baseProtocolLabelNames[name]; reserved {
@@ -100,7 +114,7 @@ func (d *DefaultLabelStrategy) labelsFromDescription(p *protocol.Protocol) ([]st
 
 		seen[name] = struct{}{}
 		names = append(names, name)
-		values = append(values, strings.TrimSpace(submatch[2]))
+		values = append(values, value)
 	}
 
 	return names, values

@@ -102,5 +102,5 @@ func (c *BirdClient) StatusFromSocket(socketPath string) (*parser.Status, error)
 		return nil, err
 	}
 
-	return parser.ParseStatus(b), nil
+	return parser.ParseStatusWithError(b)
 }

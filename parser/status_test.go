@@ -92,3 +92,32 @@ Daemon is up
 		t.Errorf("expected ServerTime zero due to parse error, got %v", s.ServerTime)
 	}
 }
+
+func TestParseStatusWithErrorRejectsMalformedFields(t *testing.T) {
+	tests := []struct {
+		name   string
+		sample string
+	}{
+		{name: "missing daemon state", sample: "BIRD 2.17.1\n"},
+		{name: "unknown daemon state", sample: "BIRD 2.17.1\nDaemon is sideways\n"},
+		{name: "malformed server time", sample: "BIRD 2.17.1\nCurrent server time is not-a-time\nDaemon is up\n"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := ParseStatusWithError([]byte(tt.sample)); err == nil {
+				t.Fatal("expected malformed BIRD status to return an error")
+			}
+		})
+	}
+}
+
+func TestParseStatusWithErrorAcceptsDaemonDown(t *testing.T) {
+	s, err := ParseStatusWithError([]byte("BIRD 2.17.1\nDaemon is down\n"))
+	if err != nil {
+		t.Fatalf("expected daemon-down status to parse: %v", err)
+	}
+	if s.DaemonUp {
+		t.Fatal("expected daemon-down status to remain down")
+	}
+}

@@ -102,7 +102,12 @@ func startServer() {
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	reg := prometheus.NewRegistry()
 	p := enabledProtocols()
-	c := NewMetricCollector(*newFormat, p, *descriptionLabels, *birdSocket)
+	c := NewMetricCollector(
+		*newFormat,
+		p,
+		*descriptionLabels,
+		statusSocketPath(*birdV2, *birdEnabled, *birdSocket, *bird6Socket),
+	)
 	reg.MustRegister(c)
 
 	l := log.New()
@@ -111,6 +116,14 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 		ErrorLog:      l,
 		ErrorHandling: promhttp.ContinueOnError,
 	}).ServeHTTP(w, r)
+}
+
+func statusSocketPath(birdV2, birdEnabled bool, birdSocket, bird6Socket string) string {
+	if birdV2 || birdEnabled {
+		return birdSocket
+	}
+
+	return bird6Socket
 }
 
 func enabledProtocols() protocol.Proto {
