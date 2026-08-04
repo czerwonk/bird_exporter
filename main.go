@@ -4,8 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/czerwonk/bird_exporter/protocol"
@@ -78,6 +80,9 @@ func printVersion() {
 
 func startServer() {
 	log.Infof("Starting bird exporter (Version: %s)", version)
+	if err := validateListenAddress(*listenAddress); err != nil {
+		log.Fatal(err)
+	}
 
 	if !*newFormat {
 		log.Info("INFO: You are using the old metric format. Please consider using the new (more convenient one) by setting -format.new=true.")
@@ -144,18 +149,42 @@ func newHTTPServer(address string, handler http.Handler) *http.Server {
 	}
 }
 
+func validateListenAddress(address string) error {
+	if address == "" || strings.TrimSpace(address) != address {
+		return fmt.Errorf("web listen address must be a non-empty host:port: %q", address)
+	}
+
+	_, port, err := net.SplitHostPort(address)
+	if err != nil {
+		return fmt.Errorf("invalid web listen address %q: %w", address, err)
+	}
+	if port == "" {
+		return fmt.Errorf("web listen address must include a port: %q", address)
+	}
+	if _, err := net.LookupPort("tcp", port); err != nil {
+		return fmt.Errorf("invalid web listen port %q: %w", port, err)
+	}
+
+	return nil
+}
+
+func newPrometheusHandler(gatherer prometheus.Gatherer) http.Handler {
+	l := log.New()
+	l.Level = log.ErrorLevel
+
+	return promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{
+		ErrorLog:      l,
+		ErrorHandling: promhttp.HTTPErrorOnError,
+	})
+}
+
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	reg := prometheus.NewRegistry()
 	p := enabledProtocols()
 	c := NewMetricCollector(*newFormat, p, *descriptionLabels, *birdSocket)
 	reg.MustRegister(c)
 
-	l := log.New()
-	l.Level = log.ErrorLevel
-	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
-		ErrorLog:      l,
-		ErrorHandling: promhttp.ContinueOnError,
-	}).ServeHTTP(w, r)
+	newPrometheusHandler(reg).ServeHTTP(w, r)
 }
 
 func enabledProtocols() protocol.Proto {

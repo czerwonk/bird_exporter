@@ -1,10 +1,30 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
+
+var invalidMetricDesc = prometheus.NewDesc(
+	"bird_exporter_invalid_test_metric",
+	"Test-only invalid metric.",
+	nil,
+	nil,
+)
+
+type invalidCollector struct{}
+
+func (*invalidCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- invalidMetricDesc
+}
+
+func (*invalidCollector) Collect(ch chan<- prometheus.Metric) {
+	ch <- prometheus.NewInvalidMetric(invalidMetricDesc, errors.New("invalid test metric"))
+}
 
 func TestHTTPServerHasResourceTimeouts(t *testing.T) {
 	server := newHTTPServer("127.0.0.1:0", http.NewServeMux())
@@ -71,5 +91,48 @@ func TestHTTPMuxServesMetrics(t *testing.T) {
 
 	if !metricsCalled || response.Code != http.StatusNoContent {
 		t.Fatalf("metricsCalled = %v, status = %d", metricsCalled, response.Code)
+	}
+}
+
+func TestPrometheusHandlerFailsClosedOnGatherError(t *testing.T) {
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(&invalidCollector{})
+
+	response := httptest.NewRecorder()
+	newPrometheusHandler(registry).ServeHTTP(
+		response,
+		httptest.NewRequest(http.MethodGet, "/metrics", nil),
+	)
+
+	if response.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want %d", response.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestValidateListenAddress(t *testing.T) {
+	tests := []struct {
+		name    string
+		address string
+		wantErr bool
+	}{
+		{name: "all interfaces", address: ":9324"},
+		{name: "IPv4 loopback", address: "127.0.0.1:9324"},
+		{name: "IPv6 loopback", address: "[::1]:9324"},
+		{name: "service port", address: "localhost:http"},
+		{name: "empty", address: "", wantErr: true},
+		{name: "missing port", address: "127.0.0.1", wantErr: true},
+		{name: "empty port", address: "127.0.0.1:", wantErr: true},
+		{name: "unbracketed IPv6", address: "::1:9324", wantErr: true},
+		{name: "unknown service", address: "127.0.0.1:not-a-service", wantErr: true},
+		{name: "surrounding whitespace", address: " 127.0.0.1:9324", wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateListenAddress(tt.address)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("validateListenAddress(%q) error = %v, wantErr = %v", tt.address, err, tt.wantErr)
+			}
+		})
 	}
 }
