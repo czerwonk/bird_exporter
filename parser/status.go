@@ -23,7 +23,6 @@ var (
 	reReboot     = regexp.MustCompile(`Last reboot on (.+)`)
 	reReconfig   = regexp.MustCompile(`Last reconfiguration on (.+)`)
 	reDaemon     = regexp.MustCompile(`Daemon is (.+)`)
-	timeLayout   = "2006-01-02 15:04:05.000" // ref: https://pkg.go.dev/time#Parse
 )
 
 func ParseStatus(b []byte) *Status {
@@ -45,7 +44,7 @@ func ParseStatusWithError(b []byte) (*Status, error) {
 		s.RouterID = m[1]
 	}
 	if m := reServerTime.FindStringSubmatch(out); len(m) > 1 {
-		t, err := time.Parse(timeLayout, strings.TrimSpace(m[1]))
+		t, err := time.ParseInLocation(birdTimestampLayout, strings.TrimSpace(m[1]), time.Local)
 		if err != nil {
 			parseErr = fmt.Errorf("parse BIRD server time: %w", err)
 		} else {
@@ -53,7 +52,7 @@ func ParseStatusWithError(b []byte) (*Status, error) {
 		}
 	}
 	if m := reReboot.FindStringSubmatch(out); len(m) > 1 {
-		t, err := time.Parse(timeLayout, strings.TrimSpace(m[1]))
+		t, err := time.ParseInLocation(birdTimestampLayout, strings.TrimSpace(m[1]), time.Local)
 		if err != nil {
 			if parseErr == nil {
 				parseErr = fmt.Errorf("parse BIRD last reboot time: %w", err)
@@ -63,7 +62,7 @@ func ParseStatusWithError(b []byte) (*Status, error) {
 		}
 	}
 	if m := reReconfig.FindStringSubmatch(out); len(m) > 1 {
-		t, err := time.Parse(timeLayout, strings.TrimSpace(m[1]))
+		t, err := time.ParseInLocation(birdTimestampLayout, strings.TrimSpace(m[1]), time.Local)
 		if err != nil {
 			if parseErr == nil {
 				parseErr = fmt.Errorf("parse BIRD last reconfiguration time: %w", err)

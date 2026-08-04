@@ -64,3 +64,18 @@ IP address                Interface  State      Since         Interval  Timeout
 	}
 	assert.Equal(t, []*protocol.BFDSession{&s1, &s2, &s3}, s, "sessions")
 }
+
+func TestParseBFDSessionsFractionalSince(t *testing.T) {
+	overrideNowFunc(func() time.Time {
+		return time.Date(2022, 1, 27, 10, 0, 0, 0, time.Local)
+	})
+
+	data := `192.168.64.9 enp0s2 Up 08:49:09.974 0.100 1.000
+192.168.64.10 enp0s2 Up 2022-01-27 09:00:00.123456 0.300 2.000`
+	sessions, err := ParseBFDSessionsWithError("bfd1", []byte(data))
+
+	require.NoError(t, err)
+	require.Len(t, sessions, 2)
+	assert.Equal(t, 8*60*60+49*60+9, sessions[0].Since)
+	assert.Equal(t, 3599, sessions[1].Since)
+}

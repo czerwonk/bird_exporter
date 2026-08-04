@@ -1,6 +1,8 @@
 package metrics
 
 import (
+	"fmt"
+
 	"github.com/czerwonk/bird_exporter/client"
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/client_golang/prometheus"
@@ -56,7 +58,13 @@ func (m *ospfMetricExporter) describe(ipVersion string, ch chan<- *prometheus.De
 }
 
 func (m *ospfMetricExporter) Export(p *protocol.Protocol, ch chan<- prometheus.Metric, newFormat bool) {
-	d := m.descriptions[p.IPVersion]
+	d, ok := m.descriptions[p.IPVersion]
+	if !ok {
+		err := fmt.Errorf("cannot export OSPF protocol %q with unsupported IP version %q", p.Name, p.IPVersion)
+		log.Error(err)
+		ch <- prometheus.NewInvalidMetric(prometheus.NewInvalidDesc(err), err)
+		return
+	}
 
 	var running float64
 	if p.State == "Running" {

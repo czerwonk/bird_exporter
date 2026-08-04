@@ -8,6 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const birdTimestampLayout = "2006-01-02 15:04:05"
+
 var (
 	nowFunc func() time.Time
 )
@@ -49,7 +51,7 @@ func parseFloat(value string) float64 {
 }
 
 func parseUptimeForIso(s string) int {
-	start, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local)
+	start, err := time.ParseInLocation(birdTimestampLayout, s, time.Local)
 	if err != nil {
 		log.Errorln(err)
 		return 0

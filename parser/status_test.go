@@ -6,14 +6,18 @@ import (
 )
 
 func TestParseStatus(t *testing.T) {
+	previousLocation := time.Local
+	time.Local = time.FixedZone("UTC+3", 3*60*60)
+	t.Cleanup(func() { time.Local = previousLocation })
+
 	sample := `
 BIRD 2.17.1 ready.
 BIRD 2.17.1
 Router ID is 10.72.0.164
 Hostname is store-blob-pp014
-Current server time is 2025-08-21 10:27:57.219
+Current server time is 2025-08-21 10:27:57
 Last reboot on 2025-07-31 14:23:03.232
-Last reconfiguration on 2025-08-07 09:53:19.531
+Last reconfiguration on 2025-08-07 09:53:19.531123
 Daemon is up and running
 `
 
@@ -26,17 +30,17 @@ Daemon is up and running
 		t.Errorf("expected RouterID=10.72.0.164, got %q", s.RouterID)
 	}
 
-	expectedServerTime := time.Date(2025, 8, 21, 10, 27, 57, 219000000, time.UTC)
+	expectedServerTime := time.Date(2025, 8, 21, 10, 27, 57, 0, time.Local)
 	if !s.ServerTime.Equal(expectedServerTime) {
 		t.Errorf("expected ServerTime=%v, got %v", expectedServerTime, s.ServerTime)
 	}
 
-	expectedLastReboot := time.Date(2025, 7, 31, 14, 23, 3, 232000000, time.UTC)
+	expectedLastReboot := time.Date(2025, 7, 31, 14, 23, 3, 232000000, time.Local)
 	if !s.LastReboot.Equal(expectedLastReboot) {
 		t.Errorf("expected LastReboot=%v, got %v", expectedLastReboot, s.LastReboot)
 	}
 
-	expectedLastReconfig := time.Date(2025, 8, 7, 9, 53, 19, 531000000, time.UTC)
+	expectedLastReconfig := time.Date(2025, 8, 7, 9, 53, 19, 531123000, time.Local)
 	if !s.LastReconfig.Equal(expectedLastReconfig) {
 		t.Errorf("expected LastReconfig=%v, got %v", expectedLastReconfig, s.LastReconfig)
 	}

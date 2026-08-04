@@ -95,6 +95,14 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
 
+func TestEstablishedBgpFractionalCurrentTimeFormat(t *testing.T) {
+	data := "foo    BGP      master   up     08:49:09.974  Established\n"
+	protocols := ParseProtocols([]byte(data), "4")
+
+	require.Len(t, protocols, 1)
+	assert.IntEqual("uptime", 8*60*60+49*60+9, protocols[0].Uptime, t)
+}
+
 func TestEstablishedBgpIsoLongTimeFormat(t *testing.T) {
 	overrideNowFunc(func() time.Time {
 		return time.Date(2018, 1, 1, 2, 0, 0, 0, time.Local)
@@ -115,6 +123,22 @@ func TestEstablishedBgpIsoLongTimeFormat(t *testing.T) {
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
 	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
 	assert.Int64Equal("uptime", 3600, int64(x.Uptime), t)
+}
+
+func TestEstablishedBgpIsoLongFractionalTimeFormat(t *testing.T) {
+	overrideNowFunc(func() time.Time {
+		return time.Date(2018, 1, 1, 2, 0, 0, 0, time.Local)
+	})
+
+	for _, timestamp := range []string{"2018-01-01 01:00:00.123", "2018-01-01 01:00:00.123456"} {
+		t.Run(timestamp, func(t *testing.T) {
+			data := "foo BGP master up " + timestamp + " Established\n"
+			protocols := ParseProtocols([]byte(data), "4")
+
+			require.Len(t, protocols, 1)
+			assert.IntEqual("uptime", 3599, protocols[0].Uptime, t)
+		})
+	}
 }
 
 func TestIpv6BGP(t *testing.T) {
