@@ -67,6 +67,10 @@ In version 0.8 communication to bird changed to sockets. The default socket path
 ```
 go get -u github.com/czerwonk/bird_exporter
 ```
+or
+```
+go install github.com/czerwonk/bird_exporter@latest 
+```
 
 ## Kubernetes
 
