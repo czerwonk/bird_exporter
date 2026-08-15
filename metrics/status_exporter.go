@@ -64,7 +64,11 @@ func (e *StatusExporter) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
-	ch <- prometheus.MustNewConstMetric(e.upDesc, prometheus.GaugeValue, 1)
+	daemonUp := float64(0)
+	if s.DaemonUp {
+		daemonUp = 1
+	}
+	ch <- prometheus.MustNewConstMetric(e.upDesc, prometheus.GaugeValue, daemonUp)
 	ch <- prometheus.MustNewConstMetric(e.infoDesc, prometheus.GaugeValue, 1, s.RouterID, s.Version)
 
 	if !s.LastReboot.IsZero() {

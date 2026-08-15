@@ -3,12 +3,15 @@ package parser
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/czerwonk/bird_exporter/protocol"
 )
+
+const maxProtocolLineBytes = 1 << 20
 
 var (
 	protocolRegex    *regexp.Regexp
@@ -32,16 +35,23 @@ func init() {
 	protocolRegex = regexp.MustCompile(`^(?:1002\-)?([^\s]+)\s+(MRT|BGP|BFD|OSPF|RPKI|RIP|RAdv|Pipe|Perf|Direct|Babel|Device|Kernel|Static)\s+([^\s]+)\s+([^\s]+)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:|\.\d+)|[^\s]+)(?:\s+(.*?))?$`)
 	descriptionRegex = regexp.MustCompile(`Description:\s+(.*)`)
 	routeRegex = regexp.MustCompile(`^\s+Routes:\s+(\d+) imported, (?:(\d+) filtered, )?(\d+) exported(?:, (\d+) preferred)?`)
-	uptimeRegex = regexp.MustCompile(`^(?:((\d+):(\d{2}):(\d{2}))|(\d+)|(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:|\.\d+)))$`)
+	uptimeRegex = regexp.MustCompile(`^(?:((\d+):(\d{2}):(\d{2})(?:\.\d+)?)|(\d+)|(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?))$`)
 	routeChangeRegex = regexp.MustCompile(`(Import|Export) (updates|withdraws):\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)(?:\s+(\d+|---)\s+(\d+|---))?`)
 	filterRegex = regexp.MustCompile(`(Input|Output) filter:\s+(.*)`)
-	channelRegex = regexp.MustCompile(`Channel ipv(4|6)`)
+	channelRegex = regexp.MustCompile(`^\s+Channel (?:ipv|roa)(4|6)(?:\s|$)`)
 }
 
 // ParseProtocols parses bird output and returns protocol.Protocol structs
 func ParseProtocols(data []byte, ipVersion string) []*protocol.Protocol {
+	protocols, _ := ParseProtocolsWithError(data, ipVersion)
+	return protocols
+}
+
+// ParseProtocolsWithError parses BIRD output and reports scanner failures.
+func ParseProtocolsWithError(data []byte, ipVersion string) ([]*protocol.Protocol, error) {
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
+	scanner.Buffer(make([]byte, 64<<10), maxProtocolLineBytes)
 
 	c := &context{protocols: make([]*protocol.Protocol, 0), ipVersion: ipVersion}
 
@@ -66,7 +76,11 @@ func ParseProtocols(data []byte, ipVersion string) []*protocol.Protocol {
 		}
 	}
 
-	return c.protocols
+	if err := scanner.Err(); err != nil {
+		return c.protocols, fmt.Errorf("scan BIRD protocols reply: %w", err)
+	}
+
+	return c.protocols, nil
 }
 
 func handleEmptyLine(c *context) {
@@ -96,6 +110,10 @@ func parseLineForProtocol(c *context) {
 }
 
 func parseLineForDescription(c *context) {
+	if c.current == nil {
+		return
+	}
+
 	match := descriptionRegex.FindStringSubmatch(c.line)
 
 	if match == nil {
@@ -172,12 +190,13 @@ func parseLineForChannel(c *context) {
 		c.current.IPVersion = channel[1]
 	} else {
 		c.current = &protocol.Protocol{
-			Name:                c.current.Name,
-			Proto:               c.current.Proto,
-			Up:                  c.current.Up,
-			Uptime:              c.current.Uptime,
-			IPVersion:           channel[1],
-			RouteChangeFormatV3: c.current.RouteChangeFormatV3,
+			Name:        c.current.Name,
+			Description: c.current.Description,
+			Proto:       c.current.Proto,
+			Up:          c.current.Up,
+			State:       c.current.State,
+			Uptime:      c.current.Uptime,
+			IPVersion:   channel[1],
 		}
 		c.protocols = append(c.protocols, c.current)
 	}

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	exportermetrics "github.com/czerwonk/bird_exporter/metrics"
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -80,8 +81,8 @@ func printVersion() {
 
 func startServer() {
 	log.Infof("Starting bird exporter (Version: %s)", version)
-	if err := validateListenAddress(*listenAddress); err != nil {
-		log.Fatal(err)
+	if err := exportermetrics.ValidateDescriptionLabelsRegex(*descriptionLabels, *descriptionLabelsRegex); err != nil {
+		log.Fatalf("Invalid description labels regex: %v", err)
 	}
 
 	if !*newFormat {
@@ -181,10 +182,23 @@ func newPrometheusHandler(gatherer prometheus.Gatherer) http.Handler {
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	reg := prometheus.NewRegistry()
 	p := enabledProtocols()
-	c := NewMetricCollector(*newFormat, p, *descriptionLabels, *birdSocket)
+	c := NewMetricCollector(
+		*newFormat,
+		p,
+		*descriptionLabels,
+		statusSocketPath(*birdV2, *birdEnabled, *birdSocket, *bird6Socket),
+	)
 	reg.MustRegister(c)
 
 	newPrometheusHandler(reg).ServeHTTP(w, r)
+}
+
+func statusSocketPath(birdV2, birdEnabled bool, birdSocket, bird6Socket string) string {
+	if birdV2 || birdEnabled {
+		return birdSocket
+	}
+
+	return bird6Socket
 }
 
 func enabledProtocols() protocol.Proto {

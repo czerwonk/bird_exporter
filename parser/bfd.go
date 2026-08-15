@@ -3,6 +3,7 @@ package parser
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -14,7 +15,7 @@ var (
 )
 
 func init() {
-	bfdSessionRegex = regexp.MustCompile(`^([^\s]+)\s+([^\s]+)\s+(Up|Down|Init)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|[^\s]+)\s+(\d{1,})?\s+([0-9\.]+)\s+([0-9\.]+)$`)
+	bfdSessionRegex = regexp.MustCompile(`^([^\s]+)\s+([^\s]+)\s+(Up|Down|Init)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?|[^\s]+)(?:\s+(\d{1,}))?\s+([0-9\.]+)\s+([0-9\.]+)$`)
 }
 
 type bfdContext struct {
@@ -24,8 +25,14 @@ type bfdContext struct {
 }
 
 func ParseBFDSessions(protocolName string, data []byte) []*protocol.BFDSession {
-	reader := bytes.NewReader(data)
-	scanner := bufio.NewScanner(reader)
+	sessions, _ := ParseBFDSessionsWithError(protocolName, data)
+	return sessions
+}
+
+// ParseBFDSessionsWithError parses BFD sessions and reports scanner failures.
+func ParseBFDSessionsWithError(protocolName string, data []byte) ([]*protocol.BFDSession, error) {
+	scanner := bufio.NewScanner(bytes.NewReader(data))
+	scanner.Buffer(make([]byte, 64<<10), maxProtocolLineBytes)
 
 	c := &bfdContext{
 		sessions: make([]*protocol.BFDSession, 0),
@@ -36,8 +43,11 @@ func ParseBFDSessions(protocolName string, data []byte) []*protocol.BFDSession {
 		c.line = strings.TrimSpace(scanner.Text())
 		parseBFDSessionLine(c)
 	}
+	if err := scanner.Err(); err != nil {
+		return c.sessions, fmt.Errorf("scan BIRD BFD reply: %w", err)
+	}
 
-	return c.sessions
+	return c.sessions, nil
 }
 
 func parseBFDSessionLine(c *bfdContext) {

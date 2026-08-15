@@ -48,7 +48,7 @@ func (c *BirdClient) GetOSPFAreas(protocol *protocol.Protocol) ([]*protocol.OSPF
 		return nil, err
 	}
 
-	return parser.ParseOSPF(b), nil
+	return parser.ParseOSPFWithError(b)
 }
 
 // GetBFDSessions retrieves BFD specific information from bird
@@ -59,7 +59,7 @@ func (c *BirdClient) GetBFDSessions(protocol *protocol.Protocol) ([]*protocol.BF
 		return nil, err
 	}
 
-	return parser.ParseBFDSessions(protocol.Name, b), nil
+	return parser.ParseBFDSessionsWithError(protocol.Name, b)
 }
 
 func (c *BirdClient) protocolsFromBird(ipVersions []string) ([]*protocol.Protocol, error) {
@@ -84,7 +84,7 @@ func (c *BirdClient) protocolsFromSocket(socketPath string, ipVersion string) ([
 		return nil, err
 	}
 
-	return parser.ParseProtocols(b, ipVersion), nil
+	return parser.ParseProtocolsWithError(b, ipVersion)
 }
 
 func (c *BirdClient) socketFor(ipVersion string) string {
@@ -102,5 +102,5 @@ func (c *BirdClient) StatusFromSocket(socketPath string) (*parser.Status, error)
 		return nil, err
 	}
 
-	return parser.ParseStatus(b), nil
+	return parser.ParseStatusWithError(b)
 }

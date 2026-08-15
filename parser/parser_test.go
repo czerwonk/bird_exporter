@@ -1,12 +1,62 @@
 package parser
 
 import (
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/czerwonk/testutils/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestParseProtocolsWithErrorRejectsOversizeLine(t *testing.T) {
+	data := strings.Repeat("x", maxProtocolLineBytes+1) + "\n"
+	protocols, err := ParseProtocolsWithError([]byte(data), "4")
+	require.Error(t, err)
+	require.Empty(t, protocols)
+}
+
+func TestParseProtocolsIgnoresOrphanDescription(t *testing.T) {
+	protocols, err := ParseProtocolsWithError([]byte("  Description: untrusted=value\n0000\n"), "4")
+	require.NoError(t, err)
+	require.Empty(t, protocols)
+}
+
+func TestMultiChannelPreservesProtocolMetadata(t *testing.T) {
+	data := []byte("peer BGP master up 00:01:00 Established\n" +
+		"  Description: site=ams\n" +
+		"  Channel ipv4\n" +
+		"    Routes: 1 imported, 2 exported, 1 preferred\n" +
+		"  Channel ipv6\n" +
+		"    Routes: 3 imported, 4 exported, 3 preferred\n")
+
+	protocols, err := ParseProtocolsWithError(data, "")
+	require.NoError(t, err)
+	require.Len(t, protocols, 2)
+	for _, parsedProtocol := range protocols {
+		require.Equal(t, "site=ams", parsedProtocol.Description)
+		require.Equal(t, "Established", parsedProtocol.State)
+	}
+	require.Equal(t, "4", protocols[0].IPVersion)
+	require.Equal(t, "6", protocols[1].IPVersion)
+}
+
+func TestRPKIChannelsRemainSeparate(t *testing.T) {
+	data := []byte("r3k RPKI --- up 00:01:00 Established\n" +
+		"  Channel roa4\n" +
+		"    Routes: 10 imported, 0 exported, 10 preferred\n" +
+		"  Channel roa6\n" +
+		"    Routes: 20 imported, 0 exported, 20 preferred\n")
+
+	protocols, err := ParseProtocolsWithError(data, "")
+	require.NoError(t, err)
+	require.Len(t, protocols, 2)
+	require.Equal(t, "4", protocols[0].IPVersion)
+	require.EqualValues(t, 10, protocols[0].Imported)
+	require.Equal(t, "6", protocols[1].IPVersion)
+	require.EqualValues(t, 20, protocols[1].Imported)
+}
 
 func TestEstablishedBgpOldTimeFormat(t *testing.T) {
 	overrideNowFunc(func() time.Time {
@@ -45,6 +95,14 @@ func TestEstablishedBgpCurrentTimeFormat(t *testing.T) {
 	assert.IntEqual("uptime", 60, x.Uptime, t)
 }
 
+func TestEstablishedBgpFractionalCurrentTimeFormat(t *testing.T) {
+	data := "foo    BGP      master   up     08:49:09.974  Established\n"
+	protocols := ParseProtocols([]byte(data), "4")
+
+	require.Len(t, protocols, 1)
+	assert.IntEqual("uptime", 8*60*60+49*60+9, protocols[0].Uptime, t)
+}
+
 func TestEstablishedBgpIsoLongTimeFormat(t *testing.T) {
 	overrideNowFunc(func() time.Time {
 		return time.Date(2018, 1, 1, 2, 0, 0, 0, time.Local)
@@ -65,6 +123,22 @@ func TestEstablishedBgpIsoLongTimeFormat(t *testing.T) {
 	assert.Int64Equal("preferred", 100, x.Preferred, t)
 	assert.StringEqual("ipVersion", "4", x.IPVersion, t)
 	assert.Int64Equal("uptime", 3600, int64(x.Uptime), t)
+}
+
+func TestEstablishedBgpIsoLongFractionalTimeFormat(t *testing.T) {
+	overrideNowFunc(func() time.Time {
+		return time.Date(2018, 1, 1, 2, 0, 0, 0, time.Local)
+	})
+
+	for _, timestamp := range []string{"2018-01-01 01:00:00.123", "2018-01-01 01:00:00.123456"} {
+		t.Run(timestamp, func(t *testing.T) {
+			data := "foo BGP master up " + timestamp + " Established\n"
+			protocols := ParseProtocols([]byte(data), "4")
+
+			require.Len(t, protocols, 1)
+			assert.IntEqual("uptime", 3599, protocols[0].Uptime, t)
+		})
+	}
 }
 
 func TestIpv6BGP(t *testing.T) {
