@@ -1,6 +1,6 @@
 module github.com/czerwonk/bird_exporter
 
-go 1.26.5
+go 1.26.6
 
 require (
 	github.com/czerwonk/bird_socket v1.0.1
