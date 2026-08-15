@@ -1,0 +1,14 @@
+**
+!go.mod
+!go.sum
+!*.go
+!client/
+!client/*.go
+!metrics/
+!metrics/*.go
+!parser/
+!parser/*.go
+!protocol/
+!protocol/*.go
+*_test.go
+**/*_test.go
