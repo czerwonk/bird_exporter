@@ -1,20 +1,30 @@
+version: 2
+
 dist: artifacts
+
 before:
-   hooks:
-     - go mod download
+  hooks:
+    - go mod download
+
 builds:
-  - env:
-    - CGO_ENABLED=0
+  - binary: bird_exporter
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
     goos:
-    - linux
-    - darwin
-    - freebsd
+      - linux
+      - darwin
+      - freebsd
     goarch:
-    - amd64
-    - arm
-    - arm64
+      - amd64
+      - arm
+      - arm64
     ignore:
-    - goos: freebsd
-      goarch: arm64
-    ldflags: -s -w -X main.version={{.Version}}
-    binary: bird_exporter 
+      - goos: freebsd
+        goarch: arm64
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+
+checksum:
+  name_template: checksums.txt

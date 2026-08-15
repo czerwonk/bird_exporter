@@ -17,6 +17,7 @@ spec:
       labels:
         {{- include "bird-exporter.selectorLabels" . | nindent 8 }}
     spec:
+      automountServiceAccountToken: false
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -57,3 +58,4 @@ spec:
       - name: bird-socket
         hostPath:
           path: {{ .Values.exporter.birdSocketPath }}
+          type: Directory
