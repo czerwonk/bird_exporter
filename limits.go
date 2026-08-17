@@ -9,7 +9,7 @@ import (
 func init() {
 	_, err := maxprocs.Set(maxprocs.Logger(log.Debugf))
 	if err != nil {
-		log.Error("failed to setup CPU limits, continue without limits: %v", err)
+		log.Error("failed to setup CPU limits, continue without limits: %w", err)
 	}
 	_, err = memlimit.SetGoMemLimitWithOpts(
 		memlimit.WithRatio(0.9),
@@ -21,6 +21,6 @@ func init() {
 		),
 	)
 	if err != nil {
-		log.Error("failed to setup memory limits, continue without limits: %v", err)
+		log.Error("failed to setup memory limits, continue without limits: %w", err)
 	}
 }
