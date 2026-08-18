@@ -4,7 +4,7 @@ go 1.26.6
 
 require (
 	github.com/KimMachineGun/automemlimit v0.7.5
-	github.com/czerwonk/bird_socket v1.0.1
+	github.com/czerwonk/bird_socket v1.1.0
 	github.com/czerwonk/testutils v0.0.0-20170526233935-dd9dabe360d4
 	github.com/prometheus/client_golang v1.24.1
 	github.com/prometheus/client_model v0.6.2
