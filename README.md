@@ -1,7 +1,5 @@
 # bird_exporter
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/czerwonk/bird_exporter)](https://goreportcard.com/report/github.com/czerwonk/bird_exporter)
-
 Metric exporter for bird routing daemon to use with Prometheus.
 
 ## Remarks
@@ -75,9 +73,11 @@ authenticating TLS reverse proxy when the metrics network is not trusted.
 ```
 go get -u github.com/czerwonk/bird_exporter
 ```
+
 or
+
 ```
-go install github.com/czerwonk/bird_exporter@latest 
+go install github.com/czerwonk/bird_exporter@latest
 ```
 
 ## Kubernetes
