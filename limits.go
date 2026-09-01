@@ -11,7 +11,7 @@ func init() {
 	if err != nil {
 		log.Error("failed to setup CPU limits, continue without limits: %w", err)
 	}
-	_, err = memlimit.SetGoMemLimitWithOpts(
+	_, err = memlimit.Set(
 		memlimit.WithRatio(0.9),
 		memlimit.WithProvider(
 			memlimit.ApplyFallback(
