@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"github.com/czerwonk/bird_exporter/protocol"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/exporter-toolkit/web"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -28,11 +30,20 @@ const (
 )
 
 var (
-	showVersion      = flag.Bool("version", false, "Print version information.")
-	listenAddress    = flag.String("web.listen-address", ":9324", "Address on which to expose metrics and web interface.")
-	metricsPath      = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
-	birdSocket       = flag.String("bird.socket", "/var/run/bird.ctl", "Socket to communicate with bird routing daemon")
-	birdV2           = flag.Bool("bird.v2", false, "Bird major version >= 2.0 (multi channel protocols)")
+	showVersion   = flag.Bool("version", false, "Print version information.")
+	listenAddress = flag.String("web.listen-address", ":9324", "Address on which to expose metrics and web interface.")
+	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
+	birdSocket    = flag.String("bird.socket", "/var/run/bird.ctl", "Socket to communicate with bird routing daemon")
+	birdV2        = flag.Bool("bird.v2", false, "Bird major version >= 2.0 (multi channel protocols)")
+	// Prometheus-standard web configuration: TLS, client-certificate (mTLS)
+	// verification and basic auth in one file.
+	//-tls.* flags below do one-sided TLS only and cannot express client-cert verification.
+	// Deliberately a stdlib flag rather than the kingpin conversion:
+	// Go's flag package accepts both -name and --name, so
+	// --web.config.file works while every other flag keeps original spelling.
+	// Converting to kingpin would have renamed the entire CLI surface.
+	webConfigFile = flag.String("web.config.file", "", "Path to a prometheus/exporter-toolkit web config file (TLS, mTLS and basic auth). Takes precedence over -tls.*")
+
 	tlsEnabled       = flag.Bool("tls.enabled", false, "Enables TLS")
 	tlsCertChainPath = flag.String("tls.cert-file", "", "Path to TLS cert file")
 	tlsKeyPath       = flag.String("tls.key-file", "", "Path to TLS key file")
@@ -91,6 +102,19 @@ func startServer() {
 
 	mux := newHTTPMux(*metricsPath, handleMetricsRequest)
 	server := newHTTPServer(*listenAddress, mux)
+
+	if *webConfigFile != "" {
+		log.Infof("Listening for %s on %s (web config: %s)", *metricsPath, *listenAddress, *webConfigFile)
+		// exporter-toolkit wants a *slog.Logger; the rest of this exporter logs
+		// through logrus, so give it its own rather than migrating everything.
+		logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
+		addresses := []string{*listenAddress}
+		log.Fatal(web.ListenAndServe(server, &web.FlagConfig{
+			WebListenAddresses: &addresses,
+			WebConfigFile:      webConfigFile,
+		}, logger))
+		return
+	}
 
 	log.Infof("Listening for %s on %s (TLS: %v)", *metricsPath, *listenAddress, *tlsEnabled)
 	if *tlsEnabled {
