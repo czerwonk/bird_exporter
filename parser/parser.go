@@ -16,6 +16,7 @@ const maxProtocolLineBytes = 1 << 20
 var (
 	protocolRegex    *regexp.Regexp
 	descriptionRegex *regexp.Regexp
+	messageRegex     *regexp.Regexp
 	routeRegex       *regexp.Regexp
 	uptimeRegex      *regexp.Regexp
 	routeChangeRegex *regexp.Regexp
@@ -34,6 +35,7 @@ type context struct {
 func init() {
 	protocolRegex = regexp.MustCompile(`^(?:1002\-)?([^\s]+)\s+(MRT|BGP|BFD|OSPF|RPKI|RIP|RAdv|Pipe|Perf|Direct|Babel|Device|Kernel|Static)\s+([^\s]+)\s+([^\s]+)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:|\.\d+)|[^\s]+)(?:\s+(.*?))?$`)
 	descriptionRegex = regexp.MustCompile(`^(?:1006-)?\s+Description:\s+(.*)`)
+	messageRegex = regexp.MustCompile(`^(?:1006-)?\s+Message:`)
 	routeRegex = regexp.MustCompile(`^\s+Routes:\s+(\d+) imported, (?:(\d+) filtered, )?(\d+) exported(?:, (\d+) preferred)?`)
 	uptimeRegex = regexp.MustCompile(`^(?:((\d+):(\d{2}):(\d{2})(?:\.\d+)?)|(\d+)|(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?))$`)
 	routeChangeRegex = regexp.MustCompile(`^(?:1006-)?\s+(Import|Export) (updates|withdraws):\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)(?:\s+(\d+|---)\s+(\d+|---))?`)
@@ -58,6 +60,7 @@ func ParseProtocolsWithError(data []byte, ipVersion string) ([]*protocol.Protoco
 	var handlers = []func(*context){
 		handleEmptyLine,
 		parseLineForProtocol,
+		skipLineForMessage,
 		parseLineForDescription,
 		parseLineForChannel,
 		parseLineForRoutes,
@@ -106,6 +109,17 @@ func parseLineForProtocol(c *context) {
 	c.current.State = match[6]
 
 	c.protocols = append(c.protocols, c.current)
+	c.handled = true
+}
+
+// skipLineForMessage consumes the protocol message line. It can carry text
+// received from a BGP peer (shutdown communication), so no other handler may
+// interpret it.
+func skipLineForMessage(c *context) {
+	if !messageRegex.MatchString(c.line) {
+		return
+	}
+
 	c.handled = true
 }
 
