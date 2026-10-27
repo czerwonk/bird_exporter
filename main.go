@@ -33,6 +33,8 @@ var (
 	metricsPath      = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	birdSocket       = flag.String("bird.socket", "/var/run/bird.ctl", "Socket to communicate with bird routing daemon")
 	birdV2           = flag.Bool("bird.v2", false, "Bird major version >= 2.0 (multi channel protocols)")
+	birdParser       = flag.String("bird.parser", "regex", "Parser for protocol output: regex or scan (same result, scan uses less CPU)")
+	birdCacheTTL     = flag.Duration("bird.cache-ttl", 0, "Serve metrics from a snapshot taken at most once per this duration (0 queries bird on every request)")
 	tlsEnabled       = flag.Bool("tls.enabled", false, "Enables TLS")
 	tlsCertChainPath = flag.String("tls.cert-file", "", "Path to TLS cert file")
 	tlsKeyPath       = flag.String("tls.key-file", "", "Path to TLS key file")
@@ -85,11 +87,21 @@ func startServer() {
 		log.Fatalf("Invalid description labels regex: %v", err)
 	}
 
+	if *birdParser != "regex" && *birdParser != "scan" {
+		log.Fatalf("Invalid bird parser %q, expected regex or scan", *birdParser)
+	}
+
 	if !*newFormat {
 		log.Info("INFO: You are using the old metric format. Please consider using the new (more convenient one) by setting -format.new=true.")
 	}
 
-	mux := newHTTPMux(*metricsPath, handleMetricsRequest)
+	metricsHandler := handleMetricsRequest
+	if *birdCacheTTL > 0 {
+		log.Infof("Caching bird snapshots for %s", *birdCacheTTL)
+		metricsHandler = newPrometheusHandler(newCachingGatherer(newMetricsRegistry(), *birdCacheTTL)).ServeHTTP
+	}
+
+	mux := newHTTPMux(*metricsPath, metricsHandler)
 	server := newHTTPServer(*listenAddress, mux)
 
 	log.Infof("Listening for %s on %s (TLS: %v)", *metricsPath, *listenAddress, *tlsEnabled)
@@ -180,6 +192,10 @@ func newPrometheusHandler(gatherer prometheus.Gatherer) http.Handler {
 }
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
+	newPrometheusHandler(newMetricsRegistry()).ServeHTTP(w, r)
+}
+
+func newMetricsRegistry() *prometheus.Registry {
 	reg := prometheus.NewRegistry()
 	p := enabledProtocols()
 	c := NewMetricCollector(
@@ -190,7 +206,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	)
 	reg.MustRegister(c)
 
-	newPrometheusHandler(reg).ServeHTTP(w, r)
+	return reg
 }
 
 func statusSocketPath(birdV2, birdEnabled bool, birdSocket, bird6Socket string) string {

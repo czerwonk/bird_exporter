@@ -20,6 +20,8 @@ type BirdClientOptions struct {
 	Bird6Enabled bool
 	BirdSocket   string
 	Bird6Socket  string
+	// ScanParser parses protocols without regular expressions.
+	ScanParser bool
 }
 
 // GetProtocols retrieves protocol information and statistics from bird
@@ -82,6 +84,10 @@ func (c *BirdClient) protocolsFromSocket(socketPath string, ipVersion string) ([
 	b, err := birdsocket.Query(socketPath, "show protocols all")
 	if err != nil {
 		return nil, err
+	}
+
+	if c.Options.ScanParser {
+		return parser.ParseProtocolsScanWithError(b, ipVersion)
 	}
 
 	return parser.ParseProtocolsWithError(b, ipVersion)
