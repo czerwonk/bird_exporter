@@ -13,15 +13,18 @@ import (
 
 const maxProtocolLineBytes = 1 << 20
 
-var (
-	protocolRegex    *regexp.Regexp
-	descriptionRegex *regexp.Regexp
-	messageRegex     *regexp.Regexp
-	routeRegex       *regexp.Regexp
-	uptimeRegex      *regexp.Regexp
-	routeChangeRegex *regexp.Regexp
-	filterRegex      *regexp.Regexp
-	channelRegex     *regexp.Regexp
+var uptimeRegex = regexp.MustCompile(`^(?:((\d+):(\d{2}):(\d{2})(?:\.\d+)?)|(\d+)|(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?))$`)
+
+// Fixed words of route change and filter lines, shared by both parsers.
+const (
+	routeChangeImport    = "Import"
+	routeChangeExport    = "Export"
+	routeChangeUpdates   = "updates"
+	routeChangeWithdraws = "withdraws"
+	routeChangeUnset     = "---"
+	filterInput          = "Input"
+	filterOutput         = "Output"
+	filterKey            = " filter:"
 )
 
 type context struct {
@@ -30,32 +33,27 @@ type context struct {
 	handled   bool
 	protocols []*protocol.Protocol
 	ipVersion string
+	match     *lineMatchers
 }
 
-func init() {
-	protocolRegex = regexp.MustCompile(`^(?:1002\-)?([^\s]+)\s+(MRT|BGP|BFD|OSPF|RPKI|RIP|RAdv|Pipe|Perf|Direct|Babel|Device|Kernel|Static)\s+([^\s]+)\s+([^\s]+)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:|\.\d+)|[^\s]+)(?:\s+(.*?))?$`)
-	descriptionRegex = regexp.MustCompile(`^(?:1006-)?\s+Description:\s+(.*)`)
-	messageRegex = regexp.MustCompile(`^(?:1006-)?\s+Message:`)
-	routeRegex = regexp.MustCompile(`^\s+Routes:\s+(\d+) imported, (?:(\d+) filtered, )?(\d+) exported(?:, (\d+) preferred)?`)
-	uptimeRegex = regexp.MustCompile(`^(?:((\d+):(\d{2}):(\d{2})(?:\.\d+)?)|(\d+)|(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?))$`)
-	routeChangeRegex = regexp.MustCompile(`^(?:1006-)?\s+(Import|Export) (updates|withdraws):\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)\s+(\d+|---)(?:\s+(\d+|---)\s+(\d+|---))?`)
-	filterRegex = regexp.MustCompile(`^(?:1006-)?\s+(Input|Output) filter:\s+(.*)`)
-	channelRegex = regexp.MustCompile(`^\s+Channel (?:ipv|roa)(4|6)(?:\s|$)`)
+// lineMatchers return submatches in the layout of the regular expressions in
+// parser_re.go, or nil when the line does not match.
+type lineMatchers struct {
+	protocol    func(string) []string
+	description func(string) []string
+	message     func(string) []string
+	channel     func(string) []string
+	routes      func(string) []string
+	routeChange func(string) []string
+	filter      func(string) []string
 }
 
-// ParseProtocols parses bird output and returns protocol.Protocol structs
-func ParseProtocols(data []byte, ipVersion string) []*protocol.Protocol {
-	protocols, _ := ParseProtocolsWithError(data, ipVersion)
-	return protocols
-}
-
-// ParseProtocolsWithError parses BIRD output and reports scanner failures.
-func ParseProtocolsWithError(data []byte, ipVersion string) ([]*protocol.Protocol, error) {
+func parseProtocols(data []byte, ipVersion string, match *lineMatchers) ([]*protocol.Protocol, error) {
 	reader := bytes.NewReader(data)
 	scanner := bufio.NewScanner(reader)
 	scanner.Buffer(make([]byte, 64<<10), maxProtocolLineBytes)
 
-	c := &context{protocols: make([]*protocol.Protocol, 0), ipVersion: ipVersion}
+	c := &context{protocols: make([]*protocol.Protocol, 0), ipVersion: ipVersion, match: match}
 
 	var handlers = []func(*context){
 		handleEmptyLine,
@@ -96,7 +94,7 @@ func handleEmptyLine(c *context) {
 }
 
 func parseLineForProtocol(c *context) {
-	match := protocolRegex.FindStringSubmatch(c.line)
+	match := c.match.protocol(c.line)
 
 	if match == nil {
 		return
@@ -116,7 +114,7 @@ func parseLineForProtocol(c *context) {
 // received from a BGP peer (shutdown communication), so no other handler may
 // interpret it.
 func skipLineForMessage(c *context) {
-	if !messageRegex.MatchString(c.line) {
+	if c.match.message(c.line) == nil {
 		return
 	}
 
@@ -128,7 +126,7 @@ func parseLineForDescription(c *context) {
 		return
 	}
 
-	match := descriptionRegex.FindStringSubmatch(c.line)
+	match := c.match.description(c.line)
 
 	if match == nil {
 		return
@@ -195,7 +193,7 @@ func parseLineForChannel(c *context) {
 		return
 	}
 
-	channel := channelRegex.FindStringSubmatch(c.line)
+	channel := c.match.channel(c.line)
 	if channel == nil {
 		return
 	}
@@ -223,7 +221,7 @@ func parseLineForRoutes(c *context) {
 		return
 	}
 
-	match := routeRegex.FindStringSubmatch(c.line)
+	match := c.match.routes(c.line)
 	if match == nil {
 		return
 	}
@@ -247,7 +245,7 @@ func parseLineForRouteChanges(c *context) {
 		return
 	}
 
-	match := routeChangeRegex.FindStringSubmatch(c.line)
+	match := c.match.routeChange(c.line)
 	if match == nil {
 		return
 	}
@@ -270,15 +268,15 @@ func parseLineForRouteChanges(c *context) {
 }
 
 func getRouteChangeCount(values []string, p *protocol.Protocol) *protocol.RouteChangeCount {
-	if values[1] == "Import" {
-		if values[2] == "updates" {
+	if values[1] == routeChangeImport {
+		if values[2] == routeChangeUpdates {
 			return &p.ImportUpdates
 		}
 
 		return &p.ImportWithdraws
 	}
 
-	if values[2] == "updates" {
+	if values[2] == routeChangeUpdates {
 		return &p.ExportUpdates
 	}
 
@@ -286,7 +284,7 @@ func getRouteChangeCount(values []string, p *protocol.Protocol) *protocol.RouteC
 }
 
 func parseRouteChangeValue(value string) int64 {
-	if value == "---" {
+	if value == routeChangeUnset {
 		return 0
 	}
 
@@ -298,12 +296,12 @@ func parseLineForFilterName(c *context) {
 		return
 	}
 
-	match := filterRegex.FindStringSubmatch(c.line)
+	match := c.match.filter(c.line)
 	if match == nil {
 		return
 	}
 
-	if match[1] == "Input" {
+	if match[1] == filterInput {
 		c.current.ImportFilter = match[2]
 	} else {
 		c.current.ExportFilter = match[2]

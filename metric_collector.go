@@ -42,6 +42,7 @@ func getClient() *client.BirdClient {
 		Bird6Enabled: *bird6Enabled,
 		BirdEnabled:  *birdEnabled,
 		BirdV2:       *birdV2,
+		ScanParser:   *birdParser == "scan",
 	}
 
 	return &client.BirdClient{Options: o}

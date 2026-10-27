@@ -33,6 +33,7 @@ var (
 	metricsPath      = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	birdSocket       = flag.String("bird.socket", "/var/run/bird.ctl", "Socket to communicate with bird routing daemon")
 	birdV2           = flag.Bool("bird.v2", false, "Bird major version >= 2.0 (multi channel protocols)")
+	birdParser       = flag.String("bird.parser", "regex", "Parser for protocol output: regex or scan (same result, scan uses less CPU)")
 	birdCacheTTL     = flag.Duration("bird.cache-ttl", 0, "Serve metrics from a snapshot taken at most once per this duration (0 queries bird on every request)")
 	tlsEnabled       = flag.Bool("tls.enabled", false, "Enables TLS")
 	tlsCertChainPath = flag.String("tls.cert-file", "", "Path to TLS cert file")
@@ -84,6 +85,10 @@ func startServer() {
 	log.Infof("Starting bird exporter (Version: %s)", version)
 	if err := exportermetrics.ValidateDescriptionLabelsRegex(*descriptionLabels, *descriptionLabelsRegex); err != nil {
 		log.Fatalf("Invalid description labels regex: %v", err)
+	}
+
+	if *birdParser != "regex" && *birdParser != "scan" {
+		log.Fatalf("Invalid bird parser %q, expected regex or scan", *birdParser)
 	}
 
 	if !*newFormat {
