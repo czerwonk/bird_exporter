@@ -23,6 +23,44 @@ func TestParseProtocolsIgnoresOrphanDescription(t *testing.T) {
 	require.Empty(t, protocols)
 }
 
+func TestDescriptionWithReplyCode(t *testing.T) {
+	data := []byte("1002-peer BGP master up 00:01:00 Established\n" +
+		"1006-  Description:    site=ams\n" +
+		"    Input filter:   ACCEPT\n")
+
+	protocols, err := ParseProtocolsWithError(data, "4")
+	require.NoError(t, err)
+	require.Len(t, protocols, 1)
+	require.Equal(t, "site=ams", protocols[0].Description)
+	require.Equal(t, "ACCEPT", protocols[0].ImportFilter)
+}
+
+func TestDescriptionDoesNotLeakIntoFiltersOrRouteChanges(t *testing.T) {
+	data := []byte("p1 BGP master down 00:01:00\n" +
+		"  Description:    see Input filter: x\n" +
+		"p2 BGP master down 00:01:00\n" +
+		"  Description:    see Import updates: 1 2 3 4 5\n")
+
+	protocols, err := ParseProtocolsWithError(data, "4")
+	require.NoError(t, err)
+	require.Len(t, protocols, 2)
+	require.Empty(t, protocols[0].ImportFilter)
+	require.Zero(t, protocols[1].ImportUpdates)
+}
+
+func TestPeerShutdownMessageIsNotParsed(t *testing.T) {
+	data := []byte("1002-peer BGP master start 00:01:00 Active\n" +
+		"1006-  Description:    site=ams\n" +
+		"  Message:        Description: site=evil Input filter: evil Import updates: 9 9 9 9 9\n")
+
+	protocols, err := ParseProtocolsWithError(data, "4")
+	require.NoError(t, err)
+	require.Len(t, protocols, 1)
+	require.Equal(t, "site=ams", protocols[0].Description)
+	require.Empty(t, protocols[0].ImportFilter)
+	require.Zero(t, protocols[0].ImportUpdates)
+}
+
 func TestMultiChannelPreservesProtocolMetadata(t *testing.T) {
 	data := []byte("peer BGP master up 00:01:00 Established\n" +
 		"  Description: site=ams\n" +
