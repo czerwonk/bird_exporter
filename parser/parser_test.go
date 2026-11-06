@@ -432,3 +432,39 @@ func TestRPKIUp(t *testing.T) {
 	assert.StringEqual("state", "Established", x.State, t)
 	assert.IntEqual("up", 1, x.Up, t)
 }
+
+func TestChannelParsedFromRawSocketReplyCode(t *testing.T) {
+	// BIRD prefixes the first line of every reply block with its code
+	// ("1006-") and only uses a leading space for continuation lines. For
+	// protocols without description, message or router ID (e.g. OSPF,
+	// Direct), the channel line is the first detail line and carries the code.
+	data := []byte("2002-Name       Proto      Table      State  Since         Info\n" +
+		"1002-ospf1      OSPF       master4    up     2026-10-05 10:00:00  Running\n" +
+		"1006-  Channel ipv4\n" +
+		"     State:          UP\n" +
+		"     Table:          master4\n" +
+		"     Preference:     150\n" +
+		"     Input filter:   ACCEPT\n" +
+		"     Output filter:  REJECT\n" +
+		"     Routes:         10 imported, 2 exported, 8 preferred\n" +
+		" \n" +
+		"1002-direct1    Direct     ---        up     2026-10-05 10:00:00  \n" +
+		"1006-  Channel ipv6\n" +
+		"     State:          UP\n" +
+		"     Routes:         3 imported, 0 exported, 3 preferred\n" +
+		" \n" +
+		"0000 \n")
+
+	protocols, err := ParseProtocolsWithError(data, "")
+	require.NoError(t, err)
+	require.Len(t, protocols, 2)
+
+	require.Equal(t, "ospf1", protocols[0].Name)
+	require.Equal(t, "4", protocols[0].IPVersion)
+	require.EqualValues(t, 10, protocols[0].Imported)
+	require.EqualValues(t, 2, protocols[0].Exported)
+
+	require.Equal(t, "direct1", protocols[1].Name)
+	require.Equal(t, "6", protocols[1].IPVersion)
+	require.EqualValues(t, 3, protocols[1].Imported)
+}
