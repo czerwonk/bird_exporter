@@ -68,6 +68,30 @@ The standalone binary listens on all interfaces for compatibility. Bind to
 loopback, apply a network allowlist, or put the endpoint behind an
 authenticating TLS reverse proxy when the metrics network is not trusted.
 
+### TLS and mTLS
+
+`-tls.enabled`, `-tls.cert-file` and `-tls.key-file` enable one-sided TLS
+only; they cannot require a client certificate.
+
+For mTLS (or HTTP basic authentication), pass a Prometheus exporter-toolkit
+web configuration file with `--web.config.file`. That flag takes precedence
+over `-tls.*`.
+
+```yaml
+tls_server_config:
+  cert_file: /etc/bird_exporter/server.crt
+  key_file: /etc/bird_exporter/server.key
+  client_auth_type: RequireAndVerifyClientCert
+  client_ca_file: /etc/bird_exporter/clients-ca.crt
+```
+
+```console
+$ bird_exporter --web.config.file=/etc/bird_exporter/web-config.yml
+```
+
+See the [exporter-toolkit web configuration](https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md)
+for the full file format.
+
 ## Install
 
 ```
