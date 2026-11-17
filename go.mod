@@ -3,7 +3,7 @@ module github.com/czerwonk/bird_exporter
 go 1.26.11
 
 require (
-	github.com/KimMachineGun/automemlimit v1.0.1
+	github.com/KimMachineGun/automemlimit v1.0.2
 	github.com/czerwonk/bird_socket v1.1.1
 	github.com/czerwonk/testutils v0.0.0-20170526233935-dd9dabe360d4
 	github.com/prometheus/client_golang v1.25.0
