@@ -14,6 +14,6 @@ permissions:
 
 jobs:
   docker:
-    uses: czerwonk/go-ci/.github/workflows/docker-publish.yml@v5
+    uses: czerwonk/go-ci/.github/workflows/docker-publish.yml@v6
     with:
       platforms: linux/amd64,linux/arm64,linux/arm/v7
