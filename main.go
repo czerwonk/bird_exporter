@@ -19,7 +19,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var version = "1.7.1"
+var version = "1.7.2"
 
 const (
 	serverReadHeaderTimeout = 5 * time.Second
